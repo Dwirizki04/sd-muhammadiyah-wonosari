@@ -757,3 +757,37 @@ label {
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
+/* --- PERBAIKAN UMUM GAMBAR KONTEN (AGAR TIDAK GEPENG) --- */
+
+/* Target: Semua gambar di dalam elemen <main> dan <section> */
+main section img {
+    /* 1. Agar tidak gepeng */
+    width: 100%;         /* Lebar mengisi container */
+    height: auto;        /* PENTING: Tinggi menyesuaikan otomatis agar proporsional */
+    object-fit: cover;   /* JAGA-JAGA: Jika ada tinggi yang maksa, gambar akan di-crop rapi, bukan digepengkan */
+    
+    /* 2. Agar posisi di tengah (tidak di samping) */
+    display: block;      /* Ubah jadi blok agar bisa ditengahin */
+    margin-left: auto;   /* Dorong dari kiri */
+    margin-right: auto;  /* Dorong dari kanan */
+    margin-bottom: 25px; /* Beri jarak sedikit ke teks di bawahnya */
+
+    /* 3. Pemanis tampilan */
+    border-radius: 12px; /* Sudut tumpul agar lebih modern */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08); /* Bayangan halus */
+    max-width: 800px; /* Batasi lebar maksimal di layar besar agar tidak terlalu raksasa */
+}
+
+/* PENGECUALIAN: Jangan terapkan ini pada Logo Header & Ikon Kecil */
+.header-logo img, 
+.footer-logo img,
+.benefit-icon img,
+.extracurricular-icon img,
+.school-badge img {
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: inline-block !important;
+}
