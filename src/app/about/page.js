@@ -1,67 +1,112 @@
-// src/app/about/page.js
+"use client";
+
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 export default function About() {
+  
+  // Animasi Masuk
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
+
   return (
     <>
+      {/* HERO SECTION (Judul Halaman) */}
       <section className="hero-section">
         <div className="hero-overlay"></div>
         <div className="container">
           <div className="hero-content">
             <h1 className="school-name">Tentang Kami</h1>
-            <p className="school-tagline">Mengenal lebih dekat profil dan sejarah SD Muhammadiyah Wonosari</p>
+            <p className="school-tagline">Mengenal lebih dekat SD Muhammadiyah Wonosari</p>
           </div>
         </div>
       </section>
 
+      {/* KONTEN UTAMA (YANG DIPERBAIKI) */}
       <section className="programs-section">
         <div className="container">
-          <div className="about-content-grid">
-            <div className="about-text">
-              <h2 className="section-title" style={{textAlign: 'left'}}>Profil Sekolah</h2>
-              <div className="about-paragraphs">
-                <p><strong>SD Muhammadiyah Wonosari</strong> merupakan salah satu sekolah swasta di Kabupaten Gunungkidul di bawah naungan Majelis Pendidikan Dasar dan Menengah Muhammadiyah yang berdiri pada tanggal <strong>1 Agustus 1963</strong>.</p>
-                <br />
-                <p>Sekolah terletak di daerah dengan keragaman kondisi sosial dan budaya masyarakat. Lokasi sekolah dekat dengan pusat kota ini menyebabkan beragamnya latar belakang dari peserta didik dan orang tua.</p>
-                <br />
-                <p>Sebagai salah satu sekolah yang berbasis agama, SD Muhammadiyah Wonosari berkomitmen tidak hanya berfokus pada pendidikan di bidang akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter.</p>
-              </div>
-
-              <h2 className="section-title" style={{marginTop: '60px', textAlign: 'left'}}>Visi & Misi</h2>
-              
-              <div className="vision-mission-grid" style={{display: 'grid', gap: '20px', marginTop: '20px'}}>
-                <div className="vision-card program-card" style={{padding: '20px'}}>
-                   <div className="benefit-icon"><i className="fas fa-bullseye"></i></div>
-                   <h3>Visi</h3>
-                   <p><em>"Terwujudnya generasi Muhammadiyah yang Berkualitas dan Memiliki Integritas Tinggi terhadap Bangsa, Negara, dan Agama"</em></p>
-                </div>
-                
-                <div className="mission-card program-card" style={{padding: '20px'}}>
-                   <div className="benefit-icon"><i className="fas fa-tasks"></i></div>
-                   <h3>Misi</h3>
-                   <ul style={{listStyle: 'disc', paddingLeft: '20px', fontSize: '0.9rem', color: '#666'}}>
-                       <li>Menyelenggarakan penanaman karakter (<em>Character building</em>)</li>
-                       <li>Melaksanakan pembiasaan dan keteladanan</li>
-                       <li>Menyelenggarakan pelatihan Baitul Arqam</li>
-                       <li>Pelatihan kepemimpinan Hizbul Wathan</li>
-                   </ul>
-                </div>
-              </div>
-            </div>
+          
+          {/* GUNAKAN CLASS BARU DI SINI (JANGAN PAKAI STYLE INLINE LAGI) */}
+          <motion.div 
+            className="responsive-grid-container"
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+          >
             
-            <div className="about-images">
-              <div className="image-comparison" style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                <div className="old-school">
-                   <Image src="/images/foto sekolah dulu.jpg" alt="Sekolah Dulu" width={500} height={300} style={{borderRadius: '10px'}} />
-                   <div className="image-caption" style={{textAlign: 'center', marginTop: '5px', fontStyle: 'italic'}}>Tahun 1985</div>
+            {/* --- BAGIAN KIRI: TEKS --- */}
+            <div className="text-content">
+                <h2 style={{color: '#1a5d1a', fontSize: '2rem', marginBottom: '20px', fontWeight: 'bold'}}>
+                    Sejarah & Profil
+                </h2>
+                <p style={{lineHeight: '1.8', color: '#334155', marginBottom: '20px'}}>
+                    Sebagai salah satu sekolah yang berbasis agama, <strong>SD Muhammadiyah Wonosari</strong> berkomitmen tidak hanya berfokus pada pendidikan akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter Islami.
+                </p>
+                <p style={{lineHeight: '1.8', color: '#334155', marginBottom: '20px'}}>
+                    Berdiri sejak tahun 1963, sekolah kami terus berinovasi dalam metode pembelajaran modern yang dipadukan dengan nilai-nilai Al-Qur'an dan As-Sunnah. Kami percaya bahwa setiap anak memiliki potensi unik yang harus dikembangkan dalam lingkungan yang aman, nyaman, dan religius.
+                </p>
+
+                {/* Visi Misi */}
+                <div style={{marginTop: '40px'}}>
+                    <h2 style={{color: '#1a5d1a', fontSize: '2rem', marginBottom: '20px', fontWeight: 'bold'}}>
+                        Visi & Misi
+                    </h2>
+                    
+                    <div style={{background: '#f0fdf4', padding: '25px', borderRadius: '15px', borderLeft: '5px solid #1a5d1a', marginBottom: '20px'}}>
+                        <h3 style={{fontSize: '1.2rem', marginBottom: '10px', color: '#1a5d1a'}}>Visi</h3>
+                        <p style={{margin: 0, fontStyle: 'italic', fontWeight: '600'}}>
+                            "Terwujudnya Generasi Muslim yang Berakhlak Mulia, Cerdas, Terampil, dan Berwawasan Global."
+                        </p>
+                    </div>
+
+                    <h3 style={{fontSize: '1.2rem', marginBottom: '15px', color: '#1a5d1a'}}>Misi</h3>
+                    <ul style={{listStyle: 'none', padding: 0}}>
+                        {['Menanamkan nilai-nilai keimanan dan ketaqwaan.', 
+                          'Melaksanakan pembelajaran aktif, inovatif, dan menyenangkan.', 
+                          'Mengembangkan bakat dan minat siswa melalui ekstrakurikuler.', 
+                          'Mewujudkan lingkungan sekolah yang bersih, sehat, dan asri.'
+                        ].map((item, idx) => (
+                            <li key={idx} style={{marginBottom: '10px', display: 'flex', gap: '10px'}}>
+                                <i className="fas fa-check-circle" style={{color: '#1a5d1a', marginTop: '4px'}}></i>
+                                <span>{item}</span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
-                <div className="new-school">
-                   <Image src="/images/foto sekolah.jpg" alt="Sekolah Sekarang" width={500} height={300} style={{borderRadius: '10px'}} />
-                   <div className="image-caption" style={{textAlign: 'center', marginTop: '5px', fontStyle: 'italic'}}>Sekarang</div>
-                </div>
-              </div>
             </div>
-          </div>
+
+            {/* --- BAGIAN KANAN: FOTO-FOTO --- */}
+            <div className="image-content" style={{display: 'flex', flexDirection: 'column', gap: '25px'}}>
+                
+                {/* Foto 1 (Pastikan nama file gambar Anda benar) */}
+                <div style={{textAlign: 'center'}}>
+                    <div style={{position: 'relative', height: '300px', width: '100%', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.1)'}}>
+                        <Image 
+                            src="/images/sekolah-dulu.jpg"  /* GANTI DENGAN NAMA FILE FOTO LAMA ANDA */
+                            alt="Gedung Lama 1985" 
+                            fill 
+                            style={{objectFit: 'cover'}}
+                        />
+                    </div>
+                    <p style={{marginTop: '10px', fontStyle: 'italic', color: '#666'}}>Gedung Sekolah Tahun 1985</p>
+                </div>
+
+                {/* Foto 2 */}
+                <div style={{textAlign: 'center'}}>
+                    <div style={{position: 'relative', height: '300px', width: '100%', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.1)'}}>
+                        <Image 
+                            src="/images/foto sekolah.jpg" /* GANTI DENGAN NAMA FILE FOTO BARU ANDA */
+                            alt="Gedung Sekolah Saat Ini" 
+                            fill 
+                            style={{objectFit: 'cover'}}
+                        />
+                    </div>
+                    <p style={{marginTop: '10px', fontStyle: 'italic', color: '#666'}}>Gedung Sekolah Saat Ini</p>
+                </div>
+
+            </div>
+
+          </motion.div>
         </div>
       </section>
     </>

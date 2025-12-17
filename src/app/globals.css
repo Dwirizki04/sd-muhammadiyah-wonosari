@@ -774,3 +774,35 @@ label {
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
+/* --- CLASS SAKTI: RESPONSIF GRID (DESKTOP vs HP) --- */
+
+/* 1. Tampilan Laptop/PC (Normal: Kiri Kanan) */
+.responsive-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Membagi layar jadi 2 kolom (50% : 50%) */
+    gap: 50px; /* Jarak tengah */
+    align-items: start; /* Rata atas */
+    padding-bottom: 50px;
+}
+
+/* 2. Tampilan HP (Layar Kecil: Atas Bawah) */
+@media (max-width: 992px) {
+    .responsive-grid-container {
+        display: flex !important;      /* Ubah sistem jadi Flexbox */
+        flex-direction: column !important; /* Susun ke BAWAH (Tumpuk) */
+        gap: 30px !important;          /* Jarak antar elemen */
+    }
+    
+    /* Pastikan gambar mengisi lebar HP agar tidak kekecilan */
+    .responsive-grid-container img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        margin: 0 auto 15px !important;
+    }
+
+    /* Pastikan teks rata kanan-kiri agar rapi */
+    .responsive-grid-container p {
+        text-align: justify;
+    }
+}
