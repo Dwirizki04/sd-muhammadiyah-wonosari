@@ -82,7 +82,7 @@ export default function About() {
                 <div style={{textAlign: 'center'}}>
                     <div style={{position: 'relative', height: '300px', width: '100%', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.1)'}}>
                         <Image 
-                            src="/images/sekolah-dulu.jpg"  /* GANTI DENGAN NAMA FILE FOTO LAMA ANDA */
+                            src="/images/foto sekolah dulu.jpg"  /* GANTI DENGAN NAMA FILE FOTO LAMA ANDA */
                             alt="Gedung Lama 1985" 
                             fill 
                             style={{objectFit: 'cover'}}
