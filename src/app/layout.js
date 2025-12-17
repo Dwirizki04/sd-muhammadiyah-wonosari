@@ -14,6 +14,11 @@ const poppins = Poppins({
 export const metadata = {
   title: 'SD Muhammadiyah Wonosari',
   description: 'Mencetak Generasi Qurani, Prestasi Tiada Henti',
+  // --- TAMBAHKAN BAGIAN INI ---
+  icons: {
+    icon: '/images/logo sdm woonsa.png', // Pastikan nama filenya sesuai (png/jpg)
+    apple: '/images/logo sdm woonsa.png', // Ikon untuk shortcut di HP iPhone/Android
+  },
 };
 
 export default function RootLayout({ children }) {
