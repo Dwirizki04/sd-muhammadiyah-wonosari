@@ -387,6 +387,23 @@ img { max-width: 100%; display: block; }
         z-index: 9999 !important; /* Pastikan Header SELALU di paling atas */
         background: rgba(255, 255, 255, 0.98);
     }
+    .about-grid, 
+    .contact-grid, 
+    .programs-grid,
+    .two-column-grid,
+    /* Trik jitu: Menargetkan div apapun yang punya style grid inline */
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important; /* Paksa jadi 1 kolom penuh */
+        gap: 40px !important; /* Beri jarak antar elemen atas-bawah */
+    }
+
+    /* Memastikan gambar di dalamnya mengisi lebar penuh */
+    .about-grid img,
+    div[style*="grid-template-columns"] img {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
 }
 /* --- MOBILE DEVICES (Max 768px) --- */
 @media (max-width: 768px) {
