@@ -128,7 +128,7 @@ export default function Home() {
             <div className="hero-stats">
               {/* Statistik Items */}
               {[
-                { count: 338, label: "Siswa Aktif" },
+                { count: 337, label: "Siswa Aktif" },
                 { count: 23, label: "Guru Profesional" },
                 { count: 13, label: "Ruang Kelas" },
                 { count: 1963, label: "Tahun Berdiri" }
