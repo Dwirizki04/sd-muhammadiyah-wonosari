@@ -1,42 +1,759 @@
+/* MODERN STYLES - SD MUHAMMADIYAH WONOSARI */
+/* REVISI FINAL: Header Lega & Hero Section Turun */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    /* Color Palette */
+    --primary-green: #1a5d1a;
+    --dark-green: #144214;
+    --light-green: #e8f5e8;
+    --accent-gold: #d4af37;
+    --dark-color: #2c3e50;
+    --light-color: #f8f9fa;
+    --white: #ffffff;
+    --text-grey: #666666;
+    
+    /* Effects */
+    --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+    --shadow-hover: 0 15px 40px rgba(0,0,0,0.12);
+    --radius-md: 12px;
+    --radius-lg: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* --- 1. RESET & BASE STYLES --- */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.7;
+    color: var(--dark-color);
+    background-color: var(--light-color);
+    overflow-x: hidden;
 }
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+/* --- 2. HEADER & NAVIGATION --- */
+.site-header {
+    background: rgba(255, 255, 255, 0.85) !important; /* Transparan */
+    backdrop-filter: blur(12px); /* Efek Blur */
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.header-top {
+    background: var(--primary-green);
+    color: white;
+    padding: 8px 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.header-info { display: flex; justify-content: space-between; align-items: center; }
+.header-info span { display: flex; align-items: center; gap: 8px; }
+
+/* LAYOUT HEADER: LOGO ATAS, MENU BAWAH (Agar Lega) */
+.header-main { padding: 15px 0; }
+
+.header-content {
+    display: flex;
+    flex-direction: column; /* Menu dipaksa turun ke bawah */
+    align-items: center;    /* Rata tengah */
+    gap: 15px;              /* Jarak Logo ke Menu */
+}
+
+.logo-title-wrapper {
+    display: flex;
+    align-items: center; /* Kunci agar sejajar vertikal (tengah) */
+    justify-content: center; /* Kunci agar sejajar horizontal (tengah) */
+    gap: 25px; /* Jarak antar elemen */
+    padding: 15px 0;
+}
+
+.header-logo {
+    flex-shrink: 0; /* Mencegah logo tergencet */
+}
+
+.header-logo img {
+    width: 65px !important;   /* Paksa ukuran konsisten */
+    height: 65px !important;  /* Paksa ukuran konsisten */
+    object-fit: contain;      /* PENTING: Agar logo tidak gepeng/terpotong */
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* Efek bayangan halus di logo */
+}
+
+.school-title {
+    font-size: 1.8rem; /* Ukuran judul di header (bukan di hero) */
+    color: #1a5d1a; /* Warna hijau tua agar kontras dengan header putih */
+    margin: 0;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* Menu Navigasi */
+.main-nav {
+    width: 100%;
+    border-top: 1px solid rgba(0,0,0,0.08); /* Garis pemisah */
+    padding-top: 15px;
+}
+
+.main-nav ul {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Jarak antar menu */
+    flex-wrap: wrap;
+}
+
+.main-nav a {
+    color: var(--dark-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 5px 12px;
+    text-transform: uppercase;
+    position: relative;
+    white-space: nowrap; /* Mencegah teks menu turun baris */
+}
+
+.main-nav a:hover, .main-nav li.active a { color: var(--primary-green); }
+.main-nav li.active a::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--primary-green);
+}
+
+.menu-toggle { display: none; background: none; border: none; cursor: pointer; padding: 5px; flex-direction: column; gap: 5px; }
+.menu-toggle span { width: 28px; height: 3px; background: var(--dark-color); border-radius: 2px; transition: 0.3s; }
+
+/* RESPONSIF HEADER DI HP */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: row; /* Di HP kembali ke samping */
+        justify-content: space-between;
+        padding: 10px 0;
+        gap: 0;
+    }
+    .logo-title-wrapper { justify-content: flex-start; width: auto; gap: 10px;}
+    .main-nav { border-top: none; padding-top: 0; width: auto; display: none; /* Disembunyikan dulu, nanti JS yang munculkan */ }
+    .main-nav.active { display: block; position: absolute; top: 100%; left: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+    .main-nav ul { flex-direction: column; gap: 15px; }
+    .menu-toggle { display: flex; }
+}
+
+/* --- 3. HERO SECTION (Perbaikan Jarak) --- */
+.hero-section {
+    position: relative;
+    /* Dibuat lebih gelap (opacity 0.8) agar teks putih menonjol */
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+                url('/images/foto sekolah.jpg') center/cover no-repeat fixed;
+    padding: 220px 0 150px;
+    /* Clip-path opsional, jika ingin lurus hapus baris di bawah ini */
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+    color: white;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.hero-content {
+    position: relative; z-index: 2; max-width: 900px; margin: 0 auto;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+
+.school-badge {
+    width: 110px; height: 110px; background: white; border-radius: 50%;
+    padding: 15px; box-shadow: 0 0 30px rgba(255,255,255,0.2); margin-bottom: 10px;
+}
+
+.school-name {
+    font-size: 3rem; /* Ukuran disesuaikan agar tidak terlalu raksasa di HP */
+    font-weight: 800;
+    margin-bottom: 15px;
+    /* Bayangan teks dipertegas agar lebih kontras */
+    text-shadow: 3px 3px 10px rgba(0,0,0,0.9);
+    line-height: 1.2;
+}
+
+.school-tagline {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 40px;
+    /* Bayangan teks dipertegas */
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+    opacity: 0.95;
+}
+
+/* Stats di Hero */
+.hero-stats {
+    display: flex; justify-content: center; gap: 50px; margin-top: 40px;
+    flex-wrap: wrap; padding-top: 25px; border-top: 1px solid rgba(255,255,255,0.3);
+    width: 100%;
+}
+.stat .number { display: block; font-size: 2.8rem; font-weight: 700; color: var(--accent-gold); line-height: 1; margin-bottom: 5px; }
+.stat .label { font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+
+/* --- 4. SECTIONS LAINNYA (Standard) --- */
+.section-title {
+    text-align: center; font-size: 2.2rem; color: var(--dark-color); 
+    margin-bottom: 50px; position: relative; font-weight: 700;
+}
+.section-title::after {
+    content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 4px; border-radius: 2px; background: var(--accent-gold);
+}
+
+.programs-section, .features-section, .news-section, .gallery-section { padding: 80px 0; }
+
+/* GRID SYSTEMS */
+.programs-grid, .news-grid, .features-grid, .gallery-grid, .extracurricular-grid, .benefit-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;
+}
+
+/* CARDS STYLE */
+.program-card, .feature-card, .news-card, .benefit-card, .extracurricular-card {
+    background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(0,0,0,0.05); transition: all 0.4s ease; height: 100%;
+    display: flex; flex-direction: column; overflow: hidden;
+}
+
+.program-card:hover{
+  transform: translateY(-10px) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+  border-color: var(--primary-green);
+}
+
+.feature-card:hover, .news-card:hover, .benefit-card:hover, .extracurricular-card:hover {
+    transform: translateY(-8px); box-shadow: var(--shadow-hover);
+}
+
+/* Image Handling */
+.program-image, .news-image { height: 220px; width: 100%; overflow: hidden; }
+.program-image img, .news-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.program-card:hover img { transform: scale(1.1); }
+
+.program-content, .news-content { padding: 25px; display: flex; flex-direction: column; flex-grow: 1; }
+.program-content h3, .news-content h3 { font-size: 1.25rem; margin-bottom: 10px; color: var(--dark-color); }
+.program-content p, .news-content p { color: var(--text-grey); font-size: 0.95rem; margin-bottom: 15px; flex-grow: 1; }
+.program-link { color: var(--primary-green); font-weight: 700; margin-top: auto; }
+
+/* Extracurricular Fix */
+.extracurricular-card { overflow: visible !important; margin-top: 35px; padding: 45px 25px 25px; position: relative; }
+.extracurricular-icon {
+    position: absolute; top: -25px; left: 25px; width: 50px; height: 50px;
+    background: var(--primary-green); border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.2rem; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Benefit Card */
+.benefit-card { padding: 40px 30px; text-align: center; align-items: center; }
+.benefit-icon { font-size: 2.5rem; color: var(--primary-green); margin-bottom: 20px; }
+
+/* ABOUT & STATS */
+.about-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; margin-bottom: 60px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-top: 50px; }
+.stat-card { background: white; padding: 30px; text-align: center; border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
+.stat-number { display: block; font-size: 2.5rem; font-weight: 800; color: var(--accent-gold); }
+
+/* FOOTER */
+.site-footer { 
+    background: #1a252f;
+    color: #e0e0e0;
+    padding: 60px 0 30px;
+    margin-top: auto;
+    border-top: 5px solid #1a5d1a;
+ }
+ .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.footer-logo h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+}
+
+.footer-col h3 {
+    color: #d4af37; /* Gold Accent */
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+.footer-col h3::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: #1a5d1a;
+    border-radius: 2px;
+}
+
+.footer-col ul li { margin-bottom: 10px; }
+.footer-col ul li a { color: #aaa; transition: 0.3s; }
+.footer-col ul li a:hover { color: #d4af37; padding-left: 5px; }
+
+.footer-col p { color: #aaa; font-size: 0.95rem; margin-bottom: 15px; }
+.footer-col i { color: #1a5d1a; margin-right: 10px; width: 20px; text-align: center; }
+.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px; }
+.footer-logo { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+.footer-logo img { width: 60px; height: 60px; background: white; border-radius: 50%; padding: 5px; }
+.copyright { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 40px; color: #888; }
+
+/* WA BUTTON */
+.floating-wa {
+    position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+    background: #25d366; color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; border: 2px solid white;
+}
+
+/* Responsif Umum */
+@media (max-width: 768px) {
+    .hero-section { padding: 180px 0 100px; } /* Di HP tidak perlu terlalu turun */
+    .school-name { font-size: 2.2rem; }
+    .footer-grid { grid-template-columns: 1fr; text-align: center; }
+    .footer-logo { justify-content: center; }
+}
+
+/* RESPONSIVE STYLES - SD MUHAMMADIYAH WONOSARI */
+
+/* --- TABLET (Max 992px) --- */
+@media (max-width: 992px) {
+    .hero-section { padding: 300px 0 100px !important; min-height: auto;}
+    .school-name { font-size: 2.2rem !important; margin-bottom: 10px; word-wrap: break-word; line-height: 1.2;}
+    .contact-item { flex-direction: row; text-align: left; }
+    .school-tagline{
+        font-size: 1rem !important;
+        padding: 0 20px;
+        line-height: 1.4;
+    }
+    .school-badge{
+        width: 90px !important;
+        height: 90px !important;
+        padding: 10px !important;
+        margin-bottom: 20px !important;
+        position: relative; 
+        z-index: 1;
+    }
+
+    .school-badge img{
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 40px;
+    }
+
+    .stat {
+        width: 45%;
+        margin-bottom: 15px;
+    }
+
+    .stat .number {
+        font-size: 2rem !important;
+    }
+
+    .stat .label {
+        font-size: 0.8rem !important;
+    }
+
+    .site-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999 !important; /* Pastikan Header SELALU di paling atas */
+        background: rgba(255, 255, 255, 0.98);
+    }
+}
+/* --- MOBILE DEVICES (Max 768px) --- */
+@media (max-width: 768px) {
+    /* Header & Navigasi */
+    .header-top { display: none; } /* Sembunyikan top bar di HP agar tidak sempit */
+    .header-content { padding: 10px 0; }
+    .header-logo img {
+      width: 45px !important; /* Logo lebih kecil di HP */
+      height: 45px !important;
+    }
+    .school-title { font-size: 1.1rem; line-height: 1.3; max-width: 200px; text-align: left; }
+    
+    .menu-toggle { display: flex; } /* Tampilkan tombol burger */
+    .main-nav {
+        position: fixed; top: 70px; left: 0; width: 100%;
+        background: white; padding: 0; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+    }
+    .main-nav.active { max-height: 500px; /* Buka menu saat aktif */ }
+    .main-nav ul { flex-direction: column; gap: 0; padding: 10px 0; }
+    .main-nav li { border-bottom: 1px solid #f0f0f0; width: 100%; }
+    .main-nav a { display: block; padding: 15px 20px; }
+    .main-nav li.active a::after { display: none; }
+    .main-nav li.active a { background: var(--light-green); }
+
+    .school-badge { width: 90px; height: 90px; }
+    .school-tagline {
+      font-size: 1rem;
+    }
+    
+    .hero-stats { gap: 30px; margin-top: 30px; }
+    .stat .number { font-size: 2rem; }
+    .stat { width: 45%; }
+
+    /* Grid Layouts jadi 1 Kolom */
+    .programs-grid, .features-grid, .news-grid, .gallery-grid, .extracurricular-grid, .step-grid, .stats-grid {
+        grid-template-columns: 1fr; /* Paksa 1 kolom */
+        gap: 20px;
+    }
+    
+    /* Khusus Stats di halaman About jadi 2 kolom agar rapi */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .registration-form-container { padding: 30px 15px; }
+    .footer-logo{
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    .footer-grid {
+        grid-template-columns: 1fr; /* Jadi 1 kolom di HP */
+        gap: 40px;
+        text-align: center; /* Rata tengah di HP */
+    }
+
+    .footer-col h3::after {
+        left: 50%; /* Garis judul di tengah */
+        transform: translateX(-50%);
+    }
+
+    .social-links {
+        justify-content: center; /* Ikon sosmed di tengah */
+    }
+    
+    .footer-col ul li a {
+        justify-content: center; /* Link rata tengah */
+    }
+}
+
+/* --- SMALL MOBILE (Max 480px) --- */
+@media (max-width: 480px) {
+    .container { padding: 0 15px; }
+    .school-name { font-size: 1.6rem !important; }
+    .stat { width: 100%; } /* Statistik tumpuk ke bawah */
+    .btn-large { width: 100%; }
+    .menu-toggle{
+        display: flex;
+        z-index: 1100;
+    }
+}
+
+/* Animasi Tombol Burger */
+.menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.menu-toggle.active span:nth-child(2) { opacity: 0; }
+.menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* --- STYLE KHUSUS: KARTU BUKTI & CEK STATUS --- */
+body { background-color: #f1f5f9; }
+
+/* Container Utama */
+.main-wrapper {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 20px 60px;
+}
+
+/* 1. KOTAK PENCARIAN (Awal Muncul) */
+.search-box-panel {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.input-group {
+    position: relative;
+    margin: 20px 0;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px 20px 15px 50px;
+    border: 2px solid #e2e8f0;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(26, 93, 26, 0.1); }
+
+.input-group i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1.2rem;
+}
+
+/* 2. KARTU HASIL (Awalnya Sembunyi) */
+.result-card {
+    display: none; /* Default Hidden */
+    background: white;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    position: relative;
+    border: 1px solid #e2e8f0;
+}
+
+/* Header Kartu (Kop) */
+.card-header {
+    background: linear-gradient(135deg, var(--primary-green), #14532d);
+    padding: 25px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 4px solid var(--accent-gold);
+}
+
+.card-logo {
+    width: 70px;
+    height: 70px;
+    background: white;
+    border-radius: 50%;
+    padding: 5px;
+    flex-shrink: 0;
+}
+
+.card-title h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+.card-title p { margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem; font-weight: 300; }
+
+/* Badan Kartu */
+.card-body { padding: 30px; position: relative; }
+
+/* Watermark Background */
+.watermark {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+/* Tabel Data - FIX WARNA TEKS HITAM */
+.info-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; position: relative; z-index: 2; }
+.info-table td { vertical-align: top; font-size: 1rem; }
+
+.td-label { 
+    color: #64748b; 
+    font-weight: 600; 
+    width: 35%;
+}
+
+.td-sep { width: 20px; text-align: center; color: #cbd5e1; }
+
+.td-value { 
+    color: #0f172a !important; /* HITAM PEKAT */
+    font-weight: 700;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Status Badge */
+.status-badge {
+    text-align: center;
+    margin: 0 auto 25px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    display: table;
+}
+
+.badge-wait { background: #fffbeb; color: #b45309; border: 2px solid #fcd34d; }
+.badge-ok { background: #f0fdf4; color: #15803d; border: 2px solid #4ade80; }
+.badge-no { background: #fef2f2; color: #b91c1c; border: 2px solid #f87171; }
+
+/* Tombol Aksi */
+.action-buttons {
+    background: #f8fafc;
+    padding: 20px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Print Style */
+@media print {
+    body * { visibility: hidden; }
+    .site-header, .action-buttons, .search-box-panel { display: none !important; }
+    .result-card, .result-card * { visibility: visible; }
+    .result-card {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%;
+        max-width: 100%;
+        box-shadow: none;
+        border: 2px solid #000;
+    }
+    .main-wrapper { padding: 0; }
+}
+
+button, .program-link, .ppdb-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button:hover, .program-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(26, 93, 26, 0.2);
+}
+
+/* --- PERBAIKAN KONTEN UMUM & FORMULIR --- */
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    color: #334155; /* Warna teks abu tua, lebih nyaman di mata daripada hitam pekat */
+    line-height: 1.6;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+h1, h2, h3, h4, h5, h6 {
+    color: #1a5d1a; /* Judul berwarna hijau tua */
+    font-weight: 700;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+p {
+    margin-bottom: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Agar Input Formulir Lebih Jelas */
+.input-field, 
+input[type="text"], 
+input[type="date"], 
+input[type="tel"], 
+input[type="email"], 
+input[type="password"],
+select, 
+textarea {
+    border: 2px solid #cbd5e1 !important; /* Garis pinggir lebih tegas */
+    background-color: #f8fafc; /* Background input agak abu terang */
+    color: #1e293b; /* Teks input gelap */
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Saat input diklik/aktif */
+.input-field:focus, 
+input:focus, 
+select:focus, 
+textarea:focus {
+    border-color: #1a5d1a !important; /* Berubah hijau saat aktif */
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(26, 93, 26, 0.1); /* Efek glow hijau */
+    outline: none;
+}
+
+label {
+    color: #1e293b; /* Warna label gelap */
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+}
+/* --- PERBAIKAN HALAMAN KONTAK (FIX TABRAKAN) --- */
+
+/* 1. Layout Grid 2 Kolom */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Kiri Info, Kanan Form (50%:50%) */
+    gap: 40px; /* Jarak tengah antar kotak */
+    margin-bottom: 60px; /* Jarak aman ke Peta di bawahnya */
+    align-items: start; /* Agar tinggi kotak mengikuti konten, tidak tertarik */
+    position: relative;
+    z-index: 2; /* Pastikan berada di atas layer background */
+}
+
+/* 2. Styling Kotak Info & Form (Agar Putih & Rapi) */
+.contact-info, 
+.contact-form-container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Bayangan halus */
+    border: 1px solid rgba(0,0,0,0.05);
+    height: 100%; /* Opsional: Agar tinggi kanan-kiri seimbang */
+}
+
+/* 3. Perbaikan Input Form */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: 0.3s;
+    background: #f8fafc;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(26, 93, 26, 0.1);
+}
+
+/* 4. Pastikan Peta Aman */
+.features-section .map-container {
+    position: relative;
+    z-index: 1; /* Peta di layer bawah */
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
