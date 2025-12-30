@@ -15,7 +15,10 @@ export const metadata = {
   title: 'SD Muhammadiyah Wonosari',
   description: 'Mencetak Generasi Qurani, Prestasi Tiada Henti',
   verification: {
-    google: <meta name="google-site-verification" content="0kN048Kn0QyN-ezAPPFauHBPjUxU2m-9MT-WhvPMbcw" />, // Ganti dengan kode verifikasi Google Anda
+    google:"0kN048Kn0QyN-ezAPPFauHBPjUxU2m-9MT-WhvPMbcw"// Ganti dengan kode verifikasi Google Anda
+  },
+  icons: {
+    icon: '/favicon.ico',
   },
   // --- TAMBAHKAN BAGIAN INI ---
 };

@@ -1,10 +1,41 @@
 // src/app/page.js
 "use client";
 
-import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion'; // Import Library Animasi
+import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'; 
+import { useEffect, useRef } from 'react';
+
+// --- KOMPONEN KHUSUS UNTUK ANIMASI ANGKA ---
+function AnimatedCounter({ value }) {
+  const ref = useRef(null);
+  // Animasi mulai saat elemen terlihat di layar (dikurang 100px biar pas tengah)
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  
+  const motionValue = useMotionValue(0);
+  const springValue = useSpring(motionValue, { 
+    damping: 30, 
+    stiffness: 100, 
+    duration: 2000 // Durasi animasi 2 detik
+  });
+
+  useEffect(() => {
+    if (isInView) {
+      motionValue.set(value);
+    }
+  }, [isInView, value, motionValue]);
+
+  useEffect(() => {
+    springValue.on("change", (latest) => {
+      // Update angka langsung ke elemen tanpa render ulang (Hemat memori)
+      if (ref.current) {
+        ref.current.textContent = Math.floor(latest);
+      }
+    });
+  }, [springValue]);
+
+  return <span ref={ref} className="number">0</span>;
+}
 
 export default function Home() {
   
@@ -45,7 +76,7 @@ export default function Home() {
     { image: '/images/LS3.jpg', title: 'Berkebun' },
   ];
 
-  // --- 2. VARIASI ANIMASI (Config Framer Motion) ---
+  // --- 2. CONFIG ANIMASI ---
   const fadeInUp = {
     hidden: { opacity: 0, y: 60 },
     visible: { 
@@ -64,33 +95,7 @@ export default function Home() {
     }
   };
 
-  // --- 3. LOGIKA COUNTER ANGKA ---
-  useEffect(() => {
-    const counters = document.querySelectorAll('.stat-number');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
-          const target = parseInt(entry.target.getAttribute('data-count'));
-          let count = 0;
-          const increment = target / 50; 
-          const timer = setInterval(() => {
-            count += increment;
-            if (count >= target) {
-              entry.target.textContent = target;
-              clearInterval(timer);
-            } else {
-              entry.target.textContent = Math.floor(count);
-            }
-          }, 30);
-          entry.target.classList.add('animated');
-        }
-      });
-    }, { threshold: 0.5 });
-    
-    counters.forEach(counter => observer.observe(counter));
-  }, []);
-
-  // --- 4. TAMPILAN (JSX) ---
+  // --- 3. TAMPILAN (JSX) ---
   return (
     <>
       {/* HERO SECTION */}
@@ -126,24 +131,40 @@ export default function Home() {
             </motion.p>
             
             <div className="hero-stats">
-              {/* Statistik Items */}
-              {[
-                { count: 337, label: "Siswa Aktif" },
-                { count: 23, label: "Guru Profesional" },
-                { count: 13, label: "Ruang Kelas" },
-                { count: 1963, label: "Tahun Berdiri" }
-              ].map((stat, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + (index * 0.1) }} // Delay bertingkat
-                  className="stat"
-                >
-                  <span className="number stat-number" data-count={stat.count}>0</span>
-                  <span className="label">{stat.label}</span>
-                </motion.div>
-              ))}
+              {/* STATISTIK DENGAN ANIMASI COUNTER */}
+              
+              {/* 1. Siswa Aktif */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+                className="stat">
+                <AnimatedCounter value={337} />
+                <span className="label">Siswa Aktif</span>
+              </motion.div>
+
+              {/* 2. Guru Profesional */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+                className="stat">
+                <AnimatedCounter value={23} />
+                <span className="label">Guru Profesional</span>
+              </motion.div>
+
+              {/* 3. Ruang Kelas */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+                className="stat">
+                <AnimatedCounter value={13} />
+                <span className="label">Ruang Kelas</span>
+              </motion.div>
+
+              {/* 4. Tahun Berdiri */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+                className="stat">
+                <AnimatedCounter value={1963} />
+                <span className="label">Tahun Berdiri</span>
+              </motion.div>
+
             </div>
           </div>
         </div>
@@ -172,7 +193,7 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeInUp}
-                transition={{ delay: index * 0.1 }} // Efek muncul bergantian
+                transition={{ delay: index * 0.1 }}
               >
                 <div className="program-content">
                   <div className="benefit-icon"><i className={item.icon}></i></div>
