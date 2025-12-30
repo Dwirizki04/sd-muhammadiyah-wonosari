@@ -18,10 +18,6 @@ export const metadata = {
     google: <meta name="google-site-verification" content="0kN048Kn0QyN-ezAPPFauHBPjUxU2m-9MT-WhvPMbcw" />, // Ganti dengan kode verifikasi Google Anda
   },
   // --- TAMBAHKAN BAGIAN INI ---
-  icons: {
-    icon: '/images/logo sdm woonsa.png', // Pastikan nama filenya sesuai (png/jpg)
-    apple: '/images/logo sdm woonsa.png', // Ikon untuk shortcut di HP iPhone/Android
-  },
 };
 
 export default function RootLayout({ children }) {
