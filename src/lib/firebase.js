@@ -4,7 +4,6 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
-// Konfigurasi dari file lama Anda
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -14,11 +13,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Logika Singleton (Agar tidak error "Firebase already initialized" saat development)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Perbaikan: Inisialisasi hanya jika API Key ada atau sedang di browser
+let app;
+if (typeof window !== "undefined" || firebaseConfig.apiKey) {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+}
 
-const db = getFirestore(app);
-const storage = getStorage(app);
-const auth = getAuth(app);
+// Pastikan export tetap berjalan meskipun app belum siap saat build
+const db = app ? getFirestore(app) : null;
+const storage = app ? getStorage(app) : null;
+const auth = app ? getAuth(app) : null;
 
 export { db, storage, auth };
