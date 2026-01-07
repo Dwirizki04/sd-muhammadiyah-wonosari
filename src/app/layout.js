@@ -1,26 +1,23 @@
-// src/app/layout.js
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { Poppins } from 'next/font/google'; // Import Font
+import { Poppins } from 'next/font/google';
+import LayoutWrapper from '@/components/LayoutWrapper';
 
-// Konfigurasi Font
 const poppins = Poppins({ 
   weight: ['300', '400', '600', '700', '800'],
   subsets: ['latin'],
   display: 'swap',
 });
 
+// Sekarang metadata ini bisa di-export secara resmi (Bagus untuk Google Search)
 export const metadata = {
   title: 'SD Muhammadiyah Wonosari',
-  description: 'Mencetak Generasi Qurani, Prestasi Tiada Henti',
+  description: 'SD Muhammadiyah Wonosari berkomitmen tidak hanya berfokus pada pendidikan akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter Islami',
   verification: {
-    google:"0kN048Kn0QyN-ezAPPFauHBPjUxU2m-9MT-WhvPMbcw"// Ganti dengan kode verifikasi Google Anda
+    google: "0kN048Kn0QyN-ezAPPFauHBPjUxU2m-9MT-WhvPMbcw"
   },
   icons: {
     icon: '/favicon.ico',
   },
-  // --- TAMBAHKAN BAGIAN INI ---
 };
 
 export default function RootLayout({ children }) {
@@ -30,13 +27,10 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
       </head>
       <body className={poppins.className}>
-        <Navbar />
-        
-        <main style={{ minHeight: '80vh' }}>
-            {children}
-        </main>
-        
-        <Footer /> {/* <--- PASANG DI SINI */}
+        {/* Gunakan Wrapper yang tadi kita buat */}
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );

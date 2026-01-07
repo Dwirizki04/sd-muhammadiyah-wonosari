@@ -55,16 +55,21 @@ export default function About() {
                     <div style={{background: '#f0fdf4', padding: '25px', borderRadius: '15px', borderLeft: '5px solid #1a5d1a', marginBottom: '20px'}}>
                         <h3 style={{fontSize: '1.2rem', marginBottom: '10px', color: '#1a5d1a'}}>Visi</h3>
                         <p style={{margin: 0, fontStyle: 'italic', fontWeight: '600'}}>
-                            "Terwujudnya Generasi Muslim yang Berakhlak Mulia, Cerdas, Terampil, dan Berwawasan Global."
+                            "Menyiapkan kader Muhammadiyah yang berkemajuan, sehat, dan berkarakter"
                         </p>
                     </div>
 
                     <h3 style={{fontSize: '1.2rem', marginBottom: '15px', color: '#1a5d1a'}}>Misi</h3>
                     <ul style={{listStyle: 'none', padding: 0}}>
-                        {['Menanamkan nilai-nilai keimanan dan ketaqwaan.', 
-                          'Melaksanakan pembelajaran aktif, inovatif, dan menyenangkan.', 
-                          'Mengembangkan bakat dan minat siswa melalui ekstrakurikuler.', 
-                          'Mewujudkan lingkungan sekolah yang bersih, sehat, dan asri.'
+                        {['Menyelenggarakan pendidikan Al Islam, Kemuhammadiyahan, dan Bahasa Arab (ISMUBA yang efektif dapat membantu murid memahami Akidah Islam yang lurus sesuai Himpunan Putusan Tarjih.', 
+                          'Menyelenggarakan Ekstrakurikuler Hizbul Wathan dan Tapak Suci.', 
+                          'Mengajarkan konsep Tauhid yang sesuai Himpunan Tarjih Muhammadiyah dan memberikan contoh-contoh yang relavan.', 
+                          'Membiasakan murid untuk melakukan ibadah yang sesuai Himpunan Putusan Tarjih Muhammadiyah.',
+                          'Membentuk karakter murid dengan mengajarkan nilai-nilai Islam yang sesuai dengan Himpunan Putusan Tarjih Muhammadiyah.',
+                          'Menciptakan lingkungan yang Islami dan mendukung dengan menyediakan fasilitas yang memadai untuk kegiatan keagamaan',
+                          'Menyelenggarakan pembelajaran yang mampu mengembangkan potensi kemampuan berpikir kritis.',
+                          'Menyelenggarakan Program PHBSIM (Perilaku Hidup Bersih Sehat Islami Mandiri)',
+                          'Memenuhi fasilitas kesehatan yang memadai untuk semua warga sekolah sesuai SNP.'
                         ].map((item, idx) => (
                             <li key={idx} style={{marginBottom: '10px', display: 'flex', gap: '10px'}}>
                                 <i className="fas fa-check-circle" style={{color: '#1a5d1a', marginTop: '4px'}}></i>
