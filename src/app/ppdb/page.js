@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link'; // Tambahkan ini
 
 export default function PPDB() {
-  const isRegistrationOpen = fasle; 
+  const isRegistrationOpen = false; 
   
   const [loading, setLoading] = useState(false);
   const router = useRouter();
