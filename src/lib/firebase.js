@@ -1,4 +1,3 @@
-// src/lib/firebase.js
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -13,15 +12,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Perbaikan: Inisialisasi hanya jika API Key ada atau sedang di browser
-let app;
-if (typeof window !== "undefined" || firebaseConfig.apiKey) {
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-}
+// Pastikan Firebase hanya jalan satu kali dan tidak error saat build
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Pastikan export tetap berjalan meskipun app belum siap saat build
-const db = app ? getFirestore(app) : null;
-const storage = app ? getStorage(app) : null;
-const auth = app ? getAuth(app) : null;
-
-export { db, storage, auth };
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const auth = getAuth(app);
