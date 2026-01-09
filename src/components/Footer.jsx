@@ -52,7 +52,7 @@ export default function Footer() {
                     <p><i className="fas fa-map-marker-alt"></i> Jl. Sumber Agung, Tawarsari, Wonosari, Gunungkidul DIY</p>
                     <p><i className="fas fa-phone"></i> 0852-2644-3646</p>
                     <p><i className="fas fa-envelope"></i> sdmuri63@gmail.com</p>
-                    <p><i className="fas fa-clock"></i> Senin - Jumat: 07.00 - 16.00 WIB</p>
+                    <p><i className="fas fa-clock"></i> Senin - Jumat: 07.00 - 15.00 WIB</p>
                 </div>
             </div>
             
