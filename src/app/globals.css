@@ -1042,3 +1042,375 @@ button:hover, .program-link:hover { transform: translateY(-3px); box-shadow: 0 1
     .ppdb-card { padding: 30px 20px; }
     .header-text h2 { font-size: 1.3rem; }
 }
+
+/* --- GAYA MODAL DETAIL ADMIN --- */
+.modal-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.7); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 9999; 
+    padding: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content { 
+    background: white; 
+    width: 100%; 
+    max-width: 550px; 
+    border-radius: 20px; 
+    overflow: hidden; 
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideUpAdmin 0.3s ease-out; 
+}
+
+.modal-header { 
+    background: #1a5d1a; 
+    color: white; 
+    padding: 18px 25px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.close-btn { 
+    background: rgba(255,255,255,0.2); 
+    border: none; 
+    color: white; 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.4);
+}
+
+.modal-body { 
+    padding: 25px; 
+    max-height: 75vh; 
+    overflow-y: auto; 
+}
+
+.detail-item { 
+    margin-bottom: 15px; 
+    display: flex; 
+    flex-direction: column;
+    border-bottom: 1px solid #f1f5f9; 
+    padding-bottom: 8px; 
+}
+
+.detail-item span { 
+    font-size: 0.75rem; 
+    color: #64748b; 
+    font-weight: 600; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item p { 
+    margin: 4px 0 0 0; 
+    font-size: 1rem; 
+    font-weight: 700; 
+    color: #1e293b; 
+}
+
+.adm-btn-view { 
+    background: #3b82f6; 
+    color: white; 
+    border: none; 
+    padding: 10px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: 0.3s;
+}
+
+.adm-btn-view:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+@keyframes slideUpAdmin { 
+    from { transform: translateY(30px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+
+/* ===================================================
+   ADMIN DASHBOARD MODERN - SDM WONOSARI
+   =================================================== */
+
+:root {
+    --primary-green: #1a5d1a;
+    --dark-green: #144d14;
+    --light-bg: #f8fafc;
+    --border-color: #e2e8f0;
+}
+
+.adm-wrapper {
+    min-height: 100vh;
+    background-color: var(--light-bg);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Navbar Admin */
+.adm-nav {
+    background: white;
+    padding: 15px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.adm-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.adm-nav-brand h1 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--primary-green);
+    margin: 0;
+}
+
+/* Area Utama */
+.adm-main {
+    padding: 40px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.adm-welcome {
+    margin-bottom: 30px;
+}
+
+.adm-welcome h2 {
+    font-size: 1.8rem;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+/* Card Statistik */
+.adm-stats-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    width: 250px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    border-left: 5px solid var(--primary-green);
+    margin-bottom: 30px;
+}
+
+.adm-stats-card span {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.adm-stats-card h3 {
+    font-size: 2rem;
+    margin: 5px 0 0 0;
+    color: #1e293b;
+}
+
+/* Tabel Card */
+.adm-table-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.adm-table-header {
+    padding: 25px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.adm-search {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 300px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.adm-search:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(26, 93, 26, 0.1);
+}
+
+/* Styling Tabel */
+.adm-table-res {
+    overflow-x: auto;
+}
+
+.adm-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.adm-table th {
+    background: #f1f5f9;
+    padding: 15px 20px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #475569;
+    font-weight: 700;
+}
+
+.adm-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-color);
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+.adm-table tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Tombol-Tombol Aksi */
+.adm-btn-excel {
+    background-color: #16a34a;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.adm-btn-view {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.adm-btn-del {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.adm-btn-wa {
+    color: #16a34a;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Modal Detail (Yang baru kita buat) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; padding: 20px;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    width: 100%; max-width: 550px;
+    border-radius: 20px;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+    background: var(--primary-green);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 25px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.detail-item {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+
+.detail-item span {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.detail-item p {
+    margin: 5px 0 0 0;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+/* --- STATUS BADGE COLORS --- */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+    transition: 0.3s;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.badge-menunggu_berkas { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+.badge-diterima { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-cadangan { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+.badge-ditolak { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }

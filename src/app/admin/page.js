@@ -3,17 +3,19 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore'; // Tambah updateDoc
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 export default function AdminDashboard() {
   const [pendaftar, setPendaftar] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
+  const [selectedSiswa, setSelectedSiswa] = useState(null); 
   const router = useRouter();
 
   const fetchData = async () => {
@@ -30,66 +32,107 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredData = pendaftar.filter(item => 
-    item.nama_lengkap?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.nik?.includes(searchTerm)
-  );
+  // FUNGSI GANTI STATUS
+  const gantiStatus = async (id, statusLama) => {
+    const { value: statusBaru } = await Swal.fire({
+      title: 'Ubah Status Pendaftaran',
+      input: 'select',
+      inputOptions: {
+        'menunggu_berkas': 'Menunggu Berkas',
+        'diterima': 'Diterima',
+        'cadangan': 'Cadangan',
+        'ditolak': 'Ditolak/Batal'
+      },
+      inputValue: statusLama,
+      showCancelButton: true,
+      confirmButtonColor: '#1a5d1a',
+      confirmButtonText: 'Simpan Perubahan'
+    });
+
+    if (statusBaru) {
+      try {
+        const docRef = doc(db, "ppdb_registrations", id);
+        await updateDoc(docRef, { status: statusBaru });
+        fetchData(); // Refresh data
+        Swal.fire('Berhasil!', `Status diperbarui menjadi ${statusBaru.replace('_', ' ')}`, 'success');
+      } catch (error) {
+        Swal.fire('Gagal!', 'Terjadi kesalahan saat update status.', 'error');
+      }
+    }
+  };
+
+  const handleExportExcel = () => {
+    if (pendaftar.length === 0) return Swal.fire("Data Kosong", "", "warning");
+    const dataExcel = pendaftar.map((item, index) => ({
+      "No": index + 1,
+      "Nama": item.nama_lengkap,
+      "NIK": item.nik,
+      "Status": item.status?.replace('_', ' ').toUpperCase() || 'MENUNGGU',
+      "WA": item.no_wa
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data_PPDB");
+    XLSX.writeFile(workbook, `PPDB_SDM_Wonosari_${new Date().toLocaleDateString('id-ID')}.xlsx`);
+  };
 
   const hapusData = async (id) => {
     const result = await Swal.fire({
       title: 'Hapus Data?',
-      text: "Data akan hilang permanen.",
+      text: "Data akan hilang permanen!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#1a5d1a',
-      cancelButtonColor: '#ef4444',
       confirmButtonText: 'Ya, Hapus'
     });
-
     if (result.isConfirmed) {
       await deleteDoc(doc(db, "ppdb_registrations", id));
       fetchData();
-      Swal.fire('Terhapus!', '', 'success');
     }
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setAuthorized(true);
-        fetchData();
-      } else {
-        router.replace('/login');
-      }
+      if (user) { setAuthorized(true); fetchData(); } 
+      else { router.replace('/login'); }
     });
     return () => unsubscribe();
   }, [router]);
-  
-  if (!authorized) {
-  return (
-    <div className="adm-body" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-       <div style={{textAlign: 'center'}}>
-          <p style={{color: '#666', fontWeight: 'bold'}}>Memverifikasi Keamanan...</p>
-       </div>
-    </div>
+
+  const filteredData = pendaftar.filter(item => 
+    item.nama_lengkap?.toLowerCase().includes(searchTerm.toLowerCase()) || item.nik?.includes(searchTerm)
   );
-}
 
   if (!authorized) return null;
 
   return (
     <div className="adm-wrapper">
-      <nav className="adm-nav">
-        <div className="adm-nav-brand">
-          <Image src="/images/logo sdm woonsa.jpg" alt="Logo" width={45} height={45} />
-          <div>
-            <h1>PPDB Portal</h1>
-            <p style={{fontSize: '0.7rem', color: '#94a3b8', margin: 0}}>Admin SDM Wonosari</p>
+      {/* MODAL DETAIL SISWA */}
+      {selectedSiswa && (
+        <div className="modal-overlay" onClick={() => setSelectedSiswa(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Detail Biodata Siswa</h3>
+              <button className="close-btn" onClick={() => setSelectedSiswa(null)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-item"><span>Nama Lengkap:</span> <p>{selectedSiswa.nama_lengkap}</p></div>
+              <div className="detail-item"><span>Status:</span> <p className={`badge-${selectedSiswa.status}`}>{selectedSiswa.status?.replace('_', ' ')}</p></div>
+              <div className="detail-item"><span>NIK:</span> <p>{selectedSiswa.nik}</p></div>
+              <div className="detail-item"><span>TTL:</span> <p>{selectedSiswa.tempat_lahir}, {selectedSiswa.tanggal_lahir}</p></div>
+              <div className="detail-item"><span>Alamat:</span> <p>{selectedSiswa.alamat_lengkap}, {selectedSiswa.dusun}, {selectedSiswa.desa_kelurahan}</p></div>
+              <div className="detail-item"><span>WA Wali:</span> <p>{selectedSiswa.no_wa}</p></div>
+            </div>
           </div>
         </div>
-        <button onClick={() => { signOut(auth); router.push('/logout'); }} className="adm-btn-logout">
-          Keluar <i className="fas fa-sign-out-alt"></i>
-        </button>
+      )}
+
+      <nav className="adm-nav">
+        <div className="adm-nav-brand">
+          <Image src="/images/logo sdm woonsa.jpg" alt="Logo" width={40} height={40} />
+          <h1>Admin PPDB</h1>
+        </div>
+        <button onClick={handleExportExcel} className="adm-btn-excel"><i className="fas fa-file-excel"></i> Export Excel</button>
       </nav>
 
       <main className="adm-main">
@@ -100,58 +143,50 @@ export default function AdminDashboard() {
 
         <div className="adm-stats-card">
           <span>Total Pendaftar</span>
-          <h3>{filteredData.length}</h3>
+          <h3>{pendaftar.length} Siswa</h3>
         </div>
 
         <div className="adm-table-card">
           <div className="adm-table-header">
-            <h3 style={{margin: 0, fontWeight: 800}}>Daftar Calon Siswa</h3>
-            <input 
-              type="text" 
-              placeholder="Cari Nama / NIK..." 
-              className="adm-search"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <h3>Daftar Pendaftar</h3>
+            <input type="text" placeholder="Cari Nama/NIK..." className="adm-search" onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
-
           <div className="adm-table-res">
             <table className="adm-table">
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Nama Lengkap</th>
-                  <th>NIK</th>
-                  <th>WA</th>
+                  <th>Nama</th>
+                  <th>Status</th>
                   <th style={{textAlign: 'center'}}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" style={{textAlign: 'center', padding: '40px'}}>Memuat data...</td></tr>
-                ) : filteredData.length === 0 ? (
-                  <tr><td colSpan="5" style={{textAlign: 'center', padding: '40px'}}>Data tidak ditemukan.</td></tr>
-                ) : (
-                  filteredData.map((item, index) => (
-                    <tr key={item.id}>
-                      <td style={{color: '#cbd5e1'}}>{index + 1}</td>
-                      <td>
-                        <div style={{fontWeight: 700, textTransform: 'uppercase'}}>{item.nama_lengkap}</div>
-                        <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>{item.tanggal_daftar?.seconds ? item.tanggal_daftar.toDate().toLocaleDateString('id-ID') : '-'}</div>
-                      </td>
-                      <td style={{fontFamily: 'monospace'}}>{item.nik}</td>
-                      <td>
-                        <a href={`https://wa.me/${item.no_wa?.replace(/^0/, '62')}`} target="_blank" className="adm-btn-wa">
-                          <i className="fab fa-whatsapp"></i> {item.no_wa}
-                        </a>
-                      </td>
-                      <td style={{textAlign: 'center'}}>
-                        <button onClick={() => hapusData(item.id)} className="adm-btn-del">
-                          <i className="fas fa-trash-alt"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                  <tr><td colSpan="4" style={{textAlign: 'center'}}>Memuat data...</td></tr>
+                ) : filteredData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td>{index + 1}</td>
+                    <td>
+                        <div style={{fontWeight: 'bold'}}>{item.nama_lengkap}</div>
+                        <div style={{fontSize: '0.8rem', color: '#64748b'}}>{item.nik}</div>
+                    </td>
+                    <td>
+                        <span 
+                            className={`status-badge badge-${item.status || 'menunggu_berkas'}`}
+                            onClick={() => gantiStatus(item.id, item.status)}
+                            style={{cursor: 'pointer'}}
+                            title="Klik untuk ubah status"
+                        >
+                            {item.status?.replace('_', ' ') || 'menunggu berkas'}
+                        </span>
+                    </td>
+                    <td style={{textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center'}}>
+                      <button onClick={() => setSelectedSiswa(item)} className="adm-btn-view" title="Lihat Detail"><i className="fas fa-eye"></i></button>
+                      <button onClick={() => hapusData(item.id)} className="adm-btn-del" title="Hapus"><i className="fas fa-trash"></i></button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

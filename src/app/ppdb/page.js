@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link'; // Tambahkan ini
 
 export default function PPDB() {
-  const isRegistrationOpen = false; 
+  const isRegistrationOpen = true; // Ganti sesuai kebutuhan
   
   const [loading, setLoading] = useState(false);
   const router = useRouter();
