@@ -1,21 +1,33 @@
 // src/components/Navbar.jsx
-"use client"; // Wajib karena ada interaksi klik (toggle menu)
+"use client"; 
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Tambahkan useEffect
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { db } from '@/lib/firebase'; // Import database
+import { doc, onSnapshot } from 'firebase/firestore'; // Import fungsi snapshot
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false); // State untuk menu mobile
-  const pathname = usePathname(); // Untuk mendeteksi halaman aktif
+  const [isOpen, setIsOpen] = useState(false); 
+  const [isDonationOpen, setIsDonationOpen] = useState(false); // State saklar donasi
+  const pathname = usePathname(); 
 
-  // Fungsi cek aktif
   const isActive = (path) => pathname === path ? 'active' : '';
+
+  // Pantau status donasi dari Firebase
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "site_settings", "donation_stats"), (doc) => {
+      if (doc.exists()) {
+        setIsDonationOpen(doc.data().isOpen);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   return (
     <header className="site-header">
-      {/* Top Bar */}
+      {/* Top Bar - Tetap sama */}
       <div className="header-top">
         <div className="container">
           <div className="header-info">
@@ -26,13 +38,11 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Main Header */}
       <div className="header-main">
         <div className="container">
           <div className="header-content">
             <div className="logo-title-wrapper">
               <div className="header-logo left-logo">
-                {/* Next.js Image Optimization */}
                 <Image src="/images/logo disdakmen .png" alt="Logo Dikdasmen" width={60} height={60} />
               </div>
               <h1 className="school-title">SD Muhammadiyah Wonosari</h1>
@@ -41,27 +51,31 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Menu Navigasi */}
             <nav className={`main-nav ${isOpen ? 'active' : ''}`} id="main-nav">
               <ul>
                 <li className={isActive('/')}><Link href="/" onClick={() => setIsOpen(false)}>Beranda</Link></li>
                 <li className={isActive('/about')}><Link href="/about" onClick={() => setIsOpen(false)}>Tentang Kami</Link></li>
                 <li className={isActive('/unggulan')}><Link href="/unggulan" onClick={() => setIsOpen(false)}>Program Unggulan</Link></li>
                 <li className={isActive('/ekstrakurikuler')}><Link href="/ekstrakurikuler" onClick={() => setIsOpen(false)}>Ekstrakurikuler</Link></li>
+                
+                {/* MENU DONASI KONDISIONAL */}
+                {isDonationOpen && (
+                  <li className={isActive('/donasi')}>
+                    <Link href="/donasi" onClick={() => setIsOpen(false)}>Donasi</Link>
+                  </li>
+                )}
+                
                 <li className={isActive('/ppdb')}><Link href="/ppdb" onClick={() => setIsOpen(false)}>Pendaftaran</Link></li>
                 <li className={isActive('/contact')}><Link href="/contact" onClick={() => setIsOpen(false)}>Kontak</Link></li>
               </ul>
             </nav>
 
-            {/* Tombol Burger Mobile */}
             <button 
               className={`menu-toggle ${isOpen ? 'active' : ''}`} 
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle Menu"
             >
-              <span></span>
-              <span></span>
-              <span></span>
+              <span></span><span></span><span></span>
             </button>
           </div>
         </div>
