@@ -20,25 +20,25 @@ export default function PPDB() {
     const form = e.target;
 
     const dataPendaftaran = {
-      nama_lengkap: form.nama_lengkap.value,
+      namaLengkap: form.nama_lengkap.value,
       nik: form.nik.value,
-      jenis_kelamin: form.jenis_kelamin.value,
-      tempat_lahir: form.tempat_lahir.value,
-      tanggal_lahir: form.tanggal_lahir.value,
-      anak_ke: form.anak_ke.value,
-      jumlah_saudara: form.jumlah_saudara.value,
-      alamat_lengkap: form.alamat_lengkap.value,
+      jenisKelamin: form.jenis_kelamin.value,
+      tempatLahir: form.tempat_lahir.value,
+      tanggalLahir: form.tanggal_lahir.value,
+      anakKe: form.anak_ke.value,
+      jumlahSaudara: form.jumlah_saudara.value,
+      alamatLengkap: form.alamat_lengkap.value,
       dusun: form.dusun.value,
-      rt_rw: form.rt_rw.value,
-      desa_kelurahan: form.desa_kelurahan.value,
+      rtRw: form.rt_rw.value,
+      desaKelurahan: form.desa_kelurahan.value,
       kecamatan: form.kecamatan.value,
-      nama_ayah: form.nama_ayah.value,
-      pekerjaan_ayah: form.pekerjaan_ayah.value,
-      nama_ibu: form.nama_ibu.value,
-      pekerjaan_ibu: form.pekerjaan_ibu.value,
-      no_wa: form.no_wa.value,
-      tanggal_daftar: serverTimestamp(),
-      status: 'menunggu_berkas'
+      namaAyah: form.nama_ayah.value,
+      pekerjaanAyah: form.pekerjaan_ayah.value,
+      namaIbu: form.nama_ibu.value,
+      pekerjaanIbu: form.pekerjaan_ibu.value,
+      noHp: form.no_wa.value, // Disamakan dengan Dashboard Admin
+      createdAt: serverTimestamp(), // Menggunakan createdAt agar bisa diurutkan
+      status: 'pending' // Gunakan 'pending' agar terbaca di filter dashboard
     };
 
     try {
@@ -50,14 +50,14 @@ export default function PPDB() {
         confirmButtonColor: '#1a5d1a'
       });
 
-      const pesanWA = `Halo Admin PPDB SDM Wonosari,%0ASaya mendaftarkan anak saya:%0A*Nama:* ${dataPendaftaran.nama_lengkap}%0A*NIK:* ${dataPendaftaran.nik}%0A*Alamat:* ${dataPendaftaran.desa_kelurahan}%0A%0AMohon info selanjutnya.`;
+      const pesanWA = `Halo Admin PPDB SDM Wonosari,%0ASaya mendaftarkan anak saya:%0A*Nama:* ${dataPendaftaran.namaLengkap}%0A*NIK:* ${dataPendaftaran.nik}%0A*Alamat:* ${dataPendaftaran.desaKelurahan}%0A%0AMohon info selanjutnya.`;
       window.open(`https://wa.me/628123456789?text=${pesanWA}`, '_blank');
 
       form.reset();
       router.push('/');
     } catch (error) {
       console.error(error);
-      Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error');
+      Swal.fire('Gagal!', 'Terjadi kesalahan sistem.' + error.message, 'error');
     } finally {
       setLoading(false);
     }
