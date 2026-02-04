@@ -31,7 +31,7 @@ export default function LoginPage() {
       // Arahkan ke dashboard PPDB
       router.replace('/admin/ppdb');
     } catch (error) {
-      console.error(error);
+      console.error("Login Gagal:", error.message);
       Swal.fire('Akses Ditolak', 'Email atau Password salah!', 'error');
     } finally {
       setLoading(false);

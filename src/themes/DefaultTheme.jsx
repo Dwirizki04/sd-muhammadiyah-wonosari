@@ -1,41 +1,70 @@
+// src/themes/DefaultTheme.jsx
 "use client";
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'; 
-import { useEffect, useRef, useState } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { useEffect, useRef } from 'react';
 
 // --- KOMPONEN ANIMASI ANGKA ---
 function AnimatedCounter({ value }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
+  
   const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, { damping: 30, stiffness: 100, duration: 2000 });
+  const springValue = useSpring(motionValue, { 
+    damping: 30, 
+    stiffness: 100, 
+    duration: 2000 
+  });
 
-  useEffect(() => { if (isInView) motionValue.set(value); }, [isInView, value, motionValue]);
   useEffect(() => {
-    return springValue.on("change", (latest) => { if (ref.current) ref.current.textContent = Math.floor(latest); });
+    if (isInView) {
+      motionValue.set(value);
+    }
+  }, [isInView, value, motionValue]);
+
+  useEffect(() => {
+    return springValue.on("change", (latest) => {
+      if (ref.current) {
+        ref.current.textContent = Math.floor(latest);
+      }
+    });
   }, [springValue]);
 
   return <span ref={ref} className="number">0</span>;
 }
 
-// --- HALAMAN UTAMA (MURNI TANPA LOGIKA TEMA) ---
-export default function Home() {
-  const [newsData, setNewsData] = useState([]);
-  
-  // Ambil data berita
-  useEffect(() => {
-    const qNews = query(collection(db, "news"), orderBy("createdAt", "desc"));
-    const unsubNews = onSnapshot(qNews, (snap) => {
-      setNewsData(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsubNews();
-  }, []);
+export default function DefaultTheme() {
+  // Data Statis Berita
+  const newsData = [
+    {
+      title: 'Rapat Komite & POT',
+      date: '10 Desember 2025',
+      excerpt: 'Rapat laporan kegiatan semester 1 dan evaluasi pembelajaran.',
+      image: '/images/laporan kegiatan.jpg',
+    },
+    {
+      title: 'Siswa Meraih Juara 1',
+      date: '23 November 2025',
+      excerpt: 'Juara 1 dan Pesilat Terbaik kelas Usia Dini II Kategori A Putra.',
+      image: '/images/Tapaksuci1.jpg',
+    },
+    {
+      title: 'Borong Medali Tapak Suci',
+      date: '21 November 2025',
+      excerpt: 'Meraih tiga emas, lima perak, dan tiga perunggu di PDM CUP #4.',
+      image: '/images/Tapaksuci.jpg',
+    },
+    {
+      title: 'SABIT (Sabtu Bina Iman)',
+      date: '15 November 2025',
+      excerpt: 'Kegiatan SABIT Kelas VI Dalam Rangka Menghadapi TKA.',
+      image: '/images/mabit.jpg',
+    }
+  ];
 
-  // Data Galeri Statis
+  // Data Statis Galeri
   const galleryData = [
     { image: '/images/TS1.jpg', title: 'Kelas Takhassus' },
     { image: '/images/Sholat.jpg', title: 'Sholat Berjamaah' },
@@ -45,11 +74,26 @@ export default function Home() {
     { image: '/images/LS3.jpg', title: 'Berkebun' },
   ];
 
-  const fadeInUp = { hidden: { opacity: 0, y: 60 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } };
-  const scaleUp = { hidden: { scale: 0.5, opacity: 0 }, visible: { scale: 1, opacity: 1, transition: { duration: 0.5 } } };
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.6, ease: "easeOut" } 
+    }
+  };
+
+  const scaleUp = {
+    hidden: { scale: 0.5, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      opacity: 1, 
+      transition: { duration: 0.5 } 
+    }
+  };
 
   return (
-    <div className="main-wrapper">
+    <>
       {/* HERO SECTION */}
       <section className="hero-section">
         <div className="hero-overlay"></div>
@@ -58,12 +102,23 @@ export default function Home() {
             <motion.div variants={scaleUp} initial="hidden" animate="visible" className="school-badge">
               <Image src="/images/logo sdm woonsa.jpg" alt="Logo" width={80} height={80} priority />
             </motion.div>
-            <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="school-name">
+
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="school-name">
               SD Muhammadiyah Wonosari
             </motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="school-tagline">
+            
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="school-tagline">
               Mencetak Generasi Qurani, Prestasi Tiada Henti
             </motion.p>
+            
             <div className="hero-stats">
               <div className="stat"><AnimatedCounter value={337} /><span className="label">Siswa Aktif</span></div>
               <div className="stat"><AnimatedCounter value={23} /><span className="label">Guru Profesional</span></div>
@@ -103,20 +158,18 @@ export default function Home() {
         <div className="container">
           <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="section-title">Berita Terkini</motion.h2>
           <div className="news-grid">
-            {newsData.length > 0 ? newsData.map((item, index) => (
-              <motion.div key={item.id} className="news-card" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: index * 0.1 }}>
+            {newsData.map((item, index) => (
+              <motion.div key={index} className="news-card" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: index * 0.1 }}>
                 <div className="news-image">
-                  <Image src={item.image} alt={item.title} width={400} height={250} style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                  <Image src={item.image} alt={item.title} width={400} height={250} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                 </div>
                 <div className="news-content">
-                  <div className="news-date">{item.date}</div>
-                  <h3>{item.title}</h3>
+                  <div className="news-date" style={{fontSize: '0.85rem', color: '#888', marginBottom: '5px'}}>{item.date}</div>
+                  <h3 style={{fontSize: '1.2rem', marginBottom: '10px'}}>{item.title}</h3>
                   <p>{item.excerpt}</p>
                 </div>
               </motion.div>
-            )) : (
-              <p style={{textAlign: 'center', gridColumn: '1/-1', color: '#888'}}>Belum ada berita terbaru.</p>
-            )}
+            ))}
           </div>
         </div>
       </section>
@@ -127,9 +180,9 @@ export default function Home() {
           <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="section-title">Galeri Kegiatan</motion.h2>
           <div className="gallery-grid">
             {galleryData.map((item, index) => (
-              <motion.div key={index} className="program-card" style={{border: 'none'}} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: index * 0.1 }}>
+              <motion.div key={index} className="program-card" style={{border: 'none'}} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                 <div className="program-image" style={{height: '250px'}}>
-                  <Image src={item.image} alt={item.title} width={400} height={300} style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                  <Image src={item.image} alt={item.title} width={400} height={300} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                 </div>
                 <div style={{padding: '15px', textAlign: 'center', fontWeight: 'bold'}}>{item.title}</div>
               </motion.div>
@@ -137,6 +190,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }

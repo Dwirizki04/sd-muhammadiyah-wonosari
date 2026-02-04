@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
+import AdminSidebar from '@/components/AdminSidebar';
 
 export default function AdminLayout({ children }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  
+  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -37,8 +41,18 @@ export default function AdminLayout({ children }) {
           <p style={{ color: '#7f8c8d' }}>Memverifikasi Sesi Admin...</p>
         </div>
       </div>
+      
     );
   }
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <AdminSidebar />
+      <main style={{ flexGrow: 1, marginLeft: '260px' }}>
+        {children}
+      </main>
+    </div>
+  );
 
   return <>{children}</>;
 }
