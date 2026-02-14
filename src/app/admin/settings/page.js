@@ -1,27 +1,25 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import Swal from 'sweetalert2';
+import { subscribeThemeMode, updateRamadhanMode } from '@/lib/settingsService';
 
 export default function AdminSettings() {
   const [isRamadhan, setIsRamadhan] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // LOGIKA: Ambil status dari Service
   useEffect(() => {
-    const unsubTheme = onSnapshot(doc(db, "site_settings", "theme"), (docSnap) => {
-      if (docSnap.exists()) {
-        setIsRamadhan(docSnap.data().isRamadhanMode);
-      }
+    const unsub = subscribeThemeMode((status) => {
+      setIsRamadhan(status);
       setLoading(false);
     });
-    return () => unsubTheme();
+    return () => unsub();
   }, []);
 
-  const toggleTheme = async () => {
+  // AKSI: Jalankan toggle melalui Service
+  const handleToggle = async () => {
     try {
-      const themeRef = doc(db, "site_settings", "theme");
-      await updateDoc(themeRef, { isRamadhanMode: !isRamadhan });
+      await updateRamadhanMode(isRamadhan);
       Swal.fire({
         title: 'Berhasil!',
         text: `Tampilan web utama sekarang Mode ${!isRamadhan ? 'Ramadhan' : 'Normal'}`,
@@ -34,22 +32,22 @@ export default function AdminSettings() {
     }
   };
 
-  if (loading) return <div style={{ padding: '50px', marginLeft: '20px' }}>Memuat Pengaturan...</div>;
+  if (loading) return <div style={loadingStyle}>Memuat Pengaturan...</div>;
 
   return (
-    <div style={{ padding: '60px 40px' }}>
-      <h2 style={{ marginBottom: '30px' }}>Pengaturan Tampilan</h2>
+    <div style={containerStyle}>
+      <h2 style={{ marginBottom: '30px', color: '#1a5d1a' }}>Pengaturan Tampilan</h2>
       
       <div style={cardStyle}>
         <div>
           <h3 style={{ margin: 0 }}>Mode Ramadhan Musiman</h3>
-          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Aktifkan untuk merubah wajah depan web menjadi nuansa Islami.</p>
+          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+            Aktifkan untuk merubah wajah depan web menjadi nuansa Islami.
+          </p>
         </div>
         
-        <div 
-          onClick={toggleTheme}
-          style={switchContainer(isRamadhan)}
-        >
+        {/* SAKLAR MODERN */}
+        <div onClick={handleToggle} style={switchContainer(isRamadhan)}>
           <div style={switchCircle(isRamadhan)}></div>
         </div>
       </div>
@@ -57,7 +55,9 @@ export default function AdminSettings() {
   );
 }
 
-// --- STYLING SAKLAR MODERN ---
+// --- STYLES (Menggunakan CSS-in-JS favoritmu) ---
+const containerStyle = { padding: '60px 40px' };
+const loadingStyle = { padding: '50px', marginLeft: '20px', fontWeight: 'bold', color: '#1a5d1a' };
 const cardStyle = {
   background: 'white',
   padding: '30px',
