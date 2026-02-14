@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  uploadToCloudinary, 
+  uploadMultipleToCloudinary, 
   subscribeNews, 
   createNewsEntry, 
   removeNewsEntry 
@@ -11,8 +12,8 @@ import {
 export default function AdminNews() {
   const [news, setNews] = useState([]);
   const [form, setForm] = useState({ title: '', excerpt: '' });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,96 +22,107 @@ export default function AdminNews() {
   }, []);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files);
+    if (files.length !== 2) {
+      Swal.fire('Info', 'Mohon pilih tepat 2 foto kegiatan.', 'info');
+      e.target.value = null;
+      return;
     }
+    setSelectedFiles(files);
+    setPreviews(files.map(file => URL.createObjectURL(file)));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!imageFile) return Swal.fire('Peringatan', 'Harap pilih foto!', 'warning');
+    if (selectedFiles.length !== 2) return;
 
     setLoading(true);
     try {
-      const imageUrl = await uploadToCloudinary(imageFile);
-      if (!imageUrl) throw new Error("Upload gagal");
-
-      await createNewsEntry(form.title, form.excerpt, imageUrl);
-
-      setForm({ title: '', excerpt: '' });
-      setImageFile(null);
-      setImagePreview(null);
-      Swal.fire({ title: 'Berhasil!', icon: 'success', timer: 2000, showConfirmButton: false });
-    } catch (error) {
-      Swal.fire('Error', 'Gagal menerbitkan berita.', 'error');
+      const urls = await uploadMultipleToCloudinary(selectedFiles);
+      if (urls.length === 2) {
+        await createNewsEntry(form.title, form.excerpt, urls);
+        setForm({ title: '', excerpt: '' });
+        setSelectedFiles([]);
+        setPreviews([]);
+        Swal.fire({ title: 'Berhasil Terbit!', icon: 'success', timer: 1500, showConfirmButton: false });
+      }
+    } catch (err) {
+      Swal.fire('Error', 'Gagal memproses berita', 'error');
     }
     setLoading(false);
   };
 
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
+    const res = await Swal.fire({
       title: 'Hapus Berita?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      confirmButtonText: 'Ya, Hapus!'
+      confirmButtonText: 'Ya, Hapus'
     });
-
-    if (result.isConfirmed) {
-      try {
-        await removeNewsEntry(id);
-        Swal.fire('Terhapus!', 'Berita telah dihapus.', 'success');
-      } catch (err) {
-        Swal.fire('Error', 'Gagal menghapus.', 'error');
-      }
+    if (res.isConfirmed) {
+      await removeNewsEntry(id);
+      Swal.fire('Terhapus', '', 'success');
     }
   };
 
   return (
     <div style={containerStyle}>
-      <h1 style={titleStyle}>📰 Manajemen Berita Sekolah</h1>
+      <header style={headerStyle}>
+        <h1 style={titleStyle}>📰 Manajemen Berita</h1>
+        <p style={{ color: '#64748b' }}>SD Muhammadiyah Wonosari</p>
+      </header>
+
       <div style={adminGrid}>
-        {/* FORM SECTION */}
+        {/* KOLOM KIRI: FORM */}
         <div style={cardStyle}>
-          <h3>Tambah Berita</h3>
+          <h3 style={sectionTitle}>Buat Berita Baru</h3>
           <form onSubmit={handleSubmit} style={formStyle}>
             <input 
-              style={inputStyle} placeholder="Judul Berita" 
+              style={inputStyle} placeholder="Judul Berita Utama" 
               value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required 
             />
+            
             <div style={uploadBox}>
-              <label style={labelStyle}>Foto Berita:</label>
-              <input type="file" accept="image/*" onChange={handleFileChange} />
-              {imagePreview && <img src={imagePreview} alt="Preview" style={previewStyle} />}
+              <label style={labelStyle}>Pilih 2 Foto (Sekaligus):</label>
+              <input type="file" multiple accept="image/*" onChange={handleFileChange} style={{ fontSize: '0.8rem' }} />
+              <div style={previewGrid}>
+                {previews.map((url, i) => (
+                  <motion.img key={i} initial={{ scale: 0.8 }} animate={{ scale: 1 }} src={url} style={previewThumb} />
+                ))}
+              </div>
             </div>
+
             <textarea 
-              style={textareaStyle} placeholder="Ringkasan Berita..." 
+              style={textareaStyle} placeholder="Ringkasan atau isi berita singkat..." 
               value={form.excerpt} onChange={(e) => setForm({...form, excerpt: e.target.value})} required 
             />
+
             <button type="submit" disabled={loading} style={loading ? btnDisabled : btnSubmit}>
-              {loading ? '⏳ Memproses...' : '🚀 Terbitkan Berita'}
+              {loading ? '⏳ Sedang Mengunggah...' : '🚀 Terbitkan Berita'}
             </button>
           </form>
         </div>
 
-        {/* LIST SECTION */}
+        {/* KOLOM KANAN: LIST */}
         <div style={cardStyle}>
-          <h3>Daftar Berita</h3>
+          <h3 style={sectionTitle}>Berita Terbit</h3>
           <div style={listScrollContainer}>
-            {news.map((item) => (
-              <div key={item.id} style={newsItemStyle}>
-                <img src={item.image} alt="news" style={newsThumbStyle} />
-                <div style={{ flex: 1 }}>
-                  <h4 style={itemTitleStyle}>{item.title}</h4>
-                  <small style={{ color: '#64748b' }}>{item.date}</small>
-                </div>
-                <button onClick={() => handleDelete(item.id)} style={btnDelete}>
-                  <i className="fas fa-trash"></i>
-                </button>
-              </div>
-            ))}
+            <AnimatePresence>
+              {news.map((item) => (
+                <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={newsItemStyle}>
+                  <div style={thumbStack}>
+                    <img src={item.images?.[0]} style={imgMain} />
+                    <img src={item.images?.[1]} style={imgSub} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={itemTitle}>{item.title}</h4>
+                    <small style={{ color: '#94a3b8' }}>{item.date}</small>
+                  </div>
+                  <button onClick={() => handleDelete(item.id)} style={btnDelete}>🗑️</button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -118,21 +130,27 @@ export default function AdminNews() {
   );
 }
 
-// --- STYLES ---
-const containerStyle = { padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' };
-const titleStyle = { color: '#1a5d1a', marginBottom: '30px', textAlign: 'center' };
-const adminGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px' };
-const cardStyle = { background: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0' };
-const formStyle = { display: 'flex', flexDirection: 'column', gap: '15px' };
-const inputStyle = { padding: '12px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '1rem' };
-const textareaStyle = { ...inputStyle, minHeight: '120px', resize: 'vertical' };
-const labelStyle = { fontSize: '0.85rem', fontWeight: 'bold', color: '#64748b', marginBottom: '5px', display: 'block' };
-const uploadBox = { padding: '15px', background: '#f8fafc', borderRadius: '10px', border: '2px dashed #cbd5e1' };
-const previewStyle = { width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px', marginTop: '10px' };
-const btnSubmit = { background: '#1a5d1a', color: 'white', border: 'none', padding: '15px', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' };
+// --- STYLING (MODERN GREEN THEME) ---
+const containerStyle = { padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Inter, sans-serif' };
+const headerStyle = { marginBottom: '30px' };
+const titleStyle = { color: '#1a5d1a', fontSize: '2rem', fontWeight: '800', margin: 0 };
+const adminGrid = { display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '30px' };
+const cardStyle = { background: 'white', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' };
+const sectionTitle = { fontSize: '1.1rem', marginBottom: '20px', color: '#1e293b' };
+const formStyle = { display: 'flex', flexDirection: 'column', gap: '20px' };
+const inputStyle = { padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', background: '#f8fafc' };
+const textareaStyle = { ...inputStyle, minHeight: '130px', resize: 'none' };
+const uploadBox = { padding: '20px', background: '#f1f5f9', borderRadius: '16px', border: '2px dashed #cbd5e1', textAlign: 'center' };
+const labelStyle = { fontSize: '0.8rem', fontWeight: 'bold', color: '#64748b', marginBottom: '10px', display: 'block' };
+const previewGrid = { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' };
+const previewThumb = { width: '80px', height: '80px', borderRadius: '10px', objectFit: 'cover', border: '2px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' };
+const btnSubmit = { background: '#1a5d1a', color: 'white', border: 'none', padding: '16px', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', transition: '0.3s' };
 const btnDisabled = { ...btnSubmit, background: '#94a3b8', cursor: 'not-allowed' };
+
 const listScrollContainer = { maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' };
-const newsItemStyle = { display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: '#fff', border: '1px solid #eee', borderRadius: '12px', marginBottom: '10px' };
-const newsThumbStyle = { width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' };
-const itemTitleStyle = { margin: '0 0 5px 0', fontSize: '1rem' };
-const btnDelete = { background: '#fee2e2', color: '#dc2626', border: 'none', width: '35px', height: '35px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const newsItemStyle = { display: 'flex', alignItems: 'center', gap: '18px', padding: '15px', background: '#fff', border: '1px solid #f1f5f9', borderRadius: '16px', marginBottom: '12px' };
+const thumbStack = { position: 'relative', width: '65px', height: '55px' };
+const imgMain = { width: '45px', height: '45px', borderRadius: '8px', objectFit: 'cover' };
+const imgSub = { width: '35px', height: '35px', borderRadius: '8px', objectFit: 'cover', position: 'absolute', bottom: 0, right: 0, border: '2px solid white', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' };
+const itemTitle = { margin: '0 0 3px 0', fontSize: '0.95rem', color: '#1e293b', fontWeight: '700' };
+const btnDelete = { background: '#fff1f2', color: '#e11d48', border: 'none', width: '38px', height: '38px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
