@@ -13,7 +13,6 @@ export default function Ekstrakurikuler() {
     { title: "English Club", icon: "fas fa-language", desc: "Melatih percakapan bahasa Inggris yang aktif dan fun." },
     { title: "Seni Tari", icon: "fas fa-masks-theater", desc: "Melestarikan budaya melalui tarian tradisional." },
     { title: "Sepak Bola", icon: "fas fa-futbol", desc: "Melatih fisik dan kerjasama tim di lapangan." },
-    { title: "Seni Musik", icon: "fas fa-music", desc: "Mengembangkan bakat vokal dan instrumen musik." },
     { title: "Renang", icon: "fas fa-person-swimming", desc: "Olahraga air untuk kesehatan dan kebugaran." },
     { title: "Literasi Membaca", icon: "fas fa-book", desc: "Meningkatkan minat baca dan wawasan siswa." },
     { title: "Literasi Numerasi", icon: "fas fa-calculator", desc: "Mengasah kemampuan logika dan berhitung." },

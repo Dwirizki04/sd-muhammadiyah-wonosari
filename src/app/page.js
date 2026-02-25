@@ -2,12 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'; 
+import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from 'framer-motion'; 
 import { useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
-// --- KOMPONEN ANIMASI ANGKA ---
+// --- 1. KOMPONEN ANIMASI ANGKA (HERO STATS) ---
 function AnimatedCounter({ value }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
@@ -22,15 +22,73 @@ function AnimatedCounter({ value }) {
   return <span ref={ref} className="number">0</span>;
 }
 
-// --- HALAMAN UTAMA (MURNI TANPA LOGIKA TEMA) ---
+// --- 2. KOMPONEN SLIDER GAMBAR BERITA (2 FOTO) ---
+function NewsSlider({ images, title }) {
+  const [index, setIndex] = useState(0);
+
+  // Auto-slide setiap 4 detik jika ada lebih dari 1 gambar
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images]);
+
+  // Fallback jika tidak ada gambar
+  const displayImages = images && images.length > 0 ? images : ['/placeholder.png'];
+
+  return (
+    <div style={sliderContainerStyle}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          style={{ width: '100%', height: '100%', position: 'relative' }}
+        >
+          <Image 
+            src={displayImages[index]} 
+            alt={`${title} - ${index + 1}`} 
+            fill
+            style={{ objectFit: 'cover' }}
+            sizes="(max-width: 768px) 100vw, 400px"
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Indikator Titik Navigasi (Hanya muncul jika ada 2 foto) */}
+      {displayImages.length > 1 && (
+        <div style={dotContainerStyle}>
+          {displayImages.map((_, i) => (
+            <div 
+              key={i} 
+              style={{
+                ...dotStyle,
+                backgroundColor: i === index ? '#1a5d1a' : 'rgba(255,255,255,0.6)',
+                width: i === index ? '20px' : '8px'
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- 3. HALAMAN UTAMA (HOME) ---
 export default function Home() {
   const [newsData, setNewsData] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Ambil data berita
+  // Mengambil data berita secara real-time dari Firebase
   useEffect(() => {
     const qNews = query(collection(db, "news"), orderBy("createdAt", "desc"));
     const unsubNews = onSnapshot(qNews, (snap) => {
       setNewsData(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
     });
     return () => unsubNews();
   }, []);
@@ -98,30 +156,49 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BERITA TERKINI */}
+      {/* BERITA TERKINI - VERSI SLIDER */}
       <section className="news-section">
         <div className="container">
-          <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="section-title">Berita Terkini</motion.h2>
+          <motion.h2 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }} 
+            variants={fadeInUp} 
+            className="section-title"
+          >
+            Berita Terkini
+          </motion.h2>
+
           <div className="news-grid">
             {newsData.length > 0 ? newsData.map((item, index) => (
-              <motion.div key={item.id} className="news-card" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: index * 0.1 }}>
-                <div className="news-image">
-                  <Image src={item.image} alt={item.title} width={400} height={250} style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                </div>
+              <motion.div 
+                key={item.id} 
+                className="news-card" 
+                initial="hidden" 
+                whileInView="visible" 
+                viewport={{ once: true }} 
+                variants={fadeInUp} 
+                transition={{ delay: index * 0.1 }}
+              >
+                {/* Komponen Slider untuk Gambar Berita */}
+                <NewsSlider images={item.images} title={item.title} />
+
                 <div className="news-content">
                   <div className="news-date">{item.date}</div>
                   <h3>{item.title}</h3>
                   <p>{item.excerpt}</p>
                 </div>
               </motion.div>
-            )) : (
-              <p style={{textAlign: 'center', gridColumn: '1/-1', color: '#888'}}>Belum ada berita terbaru.</p>
+            )) : !loading && (
+              <p style={{textAlign: 'center', gridColumn: '1/-1', color: '#888'}}>
+                Belum ada berita terbaru.
+              </p>
             )}
           </div>
         </div>
       </section>
 
-      {/* GALERI */}
+      {/* GALERI KEGIATAN */}
       <section className="gallery-section" style={{background: '#f8f9fa'}}>
         <div className="container">
           <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="section-title">Galeri Kegiatan</motion.h2>
@@ -140,3 +217,29 @@ export default function Home() {
     </div>
   );
 }
+
+// --- 4. STYLES KHUSUS SLIDER (Letakkan di bawah agar tidak ada ReferenceError) ---
+const sliderContainerStyle = {
+  position: 'relative',
+  width: '100%',
+  height: '240px',
+  overflow: 'hidden',
+  borderRadius: '15px 15px 0 0',
+  backgroundColor: '#f1f5f9'
+};
+
+const dotContainerStyle = {
+  position: 'absolute',
+  bottom: '15px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  display: 'flex',
+  gap: '6px',
+  zIndex: 10
+};
+
+const dotStyle = {
+  height: '8px',
+  borderRadius: '4px',
+  transition: 'all 0.3s ease'
+};

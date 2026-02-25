@@ -1,31 +1,37 @@
 import { db } from './firebase';
 import { 
   collection, doc, onSnapshot, updateDoc, 
-  increment, query, orderBy 
+  query, orderBy, increment, serverTimestamp, deleteDoc 
 } from 'firebase/firestore';
 
 /**
  * --- DONATION STATS SERVICES ---
  */
 
-// 1. Pantau statistik dan status buka/tutup secara real-time
+// 1. Ambil statistik donasi secara real-time
 export const subscribeDonationStats = (callback) => {
-  return onSnapshot(doc(db, "site_settings", "donation_stats"), (doc) => {
-    if (doc.exists()) callback(doc.data());
-  });
+  const docRef = doc(db, "site_settings", "donation_stats");
+  return onSnapshot(docRef, (snap) => {
+    if (snap.exists()) {
+      callback(snap.data());
+    }
+  }, (err) => console.error("Gagal memuat statistik:", err));
 };
 
-// 2. Toggle Status Buka/Tutup Program
+// 2. Toggle Status Program (Buka/Tutup)
 export const toggleProgramStatus = async (currentStatus) => {
-  return await updateDoc(doc(db, "site_settings", "donation_stats"), { 
+  const docRef = doc(db, "site_settings", "donation_stats");
+  return await updateDoc(docRef, { 
     isOpen: !currentStatus 
   });
 };
 
-// 3. Reset Dana Terkumpul ke Rp 0
+// 3. Reset Jumlah Dana (Fungsi yang menyebabkan Error Build)
 export const resetCollectedAmount = async () => {
-  return await updateDoc(doc(db, "site_settings", "donation_stats"), { 
-    collected: 0 
+  const docRef = doc(db, "site_settings", "donation_stats");
+  return await updateDoc(docRef, { 
+    collected: 0,
+    lastResetAt: serverTimestamp()
   });
 };
 
@@ -33,18 +39,36 @@ export const resetCollectedAmount = async () => {
  * --- DONATION LIST SERVICES ---
  */
 
-// 4. Pantau semua riwayat donasi
+// 4. Ambil daftar riwayat donasi
 export const subscribeDonations = (callback) => {
   const q = query(collection(db, "donations"), orderBy("date", "desc"));
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+  return onSnapshot(q, (snap) => {
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    callback(data);
+  }, (err) => {
+    console.error("Gagal memuat daftar donasi:", err);
+    callback([]);
   });
 };
 
-// 5. Verifikasi Donasi (Update status dan Tambah ke Total Dana)
-export const verifyDonationEntry = async (donasiId, amount) => {
-  await updateDoc(doc(db, "donations", donasiId), { status: "verified" });
-  return await updateDoc(doc(db, "site_settings", "donation_stats"), {
-    collected: increment(amount)
+// 5. Verifikasi Donasi (Menambah jumlah ke total terkumpul)
+export const verifyDonationEntry = async (id, amount) => {
+  const donationRef = doc(db, "donations", id);
+  const statsRef = doc(db, "site_settings", "donation_stats");
+
+  // 1. Ubah status donasi menjadi terverifikasi
+  await updateDoc(donationRef, { 
+    isVerified: true,
+    verifiedAt: serverTimestamp() 
   });
+
+  // 2. Tambahkan nominal donasi ke total terkumpul secara otomatis
+  return await updateDoc(statsRef, { 
+    collected: increment(amount) 
+  });
+};
+
+// 6. Hapus Donasi
+export const removeDonationEntry = async (id) => {
+  return await deleteDoc(doc(db, "donations", id));
 };
