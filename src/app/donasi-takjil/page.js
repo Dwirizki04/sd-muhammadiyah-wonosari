@@ -93,7 +93,7 @@ export default function PublicDonasiTakjil() {
                     <div style={inputGroup}>
                       <label style={labelStyle}>Takjil</label>
                       <select value={form.takjilType} onChange={e => setForm({...form, takjilType: e.target.value})} style={inputStyle}>
-                        <option value="Nasi Box">Nasi Box</option>
+                        <option value="Nasi Box">Nasi Box (Ayam)</option>
                         <option value="Minuman">Minuman</option>
                       </select>
                     </div>
