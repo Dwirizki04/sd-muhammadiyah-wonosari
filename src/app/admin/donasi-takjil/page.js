@@ -59,7 +59,7 @@ export default function AdminDonasiTakjil() {
     
     Swal.fire('Berhasil', 'Laporan Excel telah diunduh!', 'success');
   };
-  
+
   // 2. Fungsi Set Target Porsi
   const handleSetTarget = () => {
     Swal.fire({
@@ -150,14 +150,14 @@ export default function AdminDonasiTakjil() {
       {/* Header */}
       <div className="admin-header" style={headerFlex}>
         <div>
-          <h1 style={titleStyle}>Panel Infaq Takjil</h1>
-          <p style={subTitleStyle}>Manajemen data nasi box & minuman siswa</p>
+          <h1 style={titleStyle}>Panel Infaq</h1>
+          <p style={subTitleStyle}>{stats.collected} dari {stats.target} porsi</p>
         </div>
         <div style={actionGroup}>
-          <button onClick={handleExportExcel} style={btnExcel}>📊 Cetak Excel</button>
-          <button onClick={handleSetTarget} style={btnSecondary}>🎯 Set Target</button>
-          <button onClick={handleToggleStatus} style={stats.isOpen ? btnActive : btnClosed}>
-            {stats.isOpen ? '🟢 BUKA' : '🔴 TUTUP'}
+          <button onClick={handleExportExcel} style={btnExcel}>📊 Excel</button>
+          <button onClick={handleSetTarget} style={btnSecondary}>🎯 Target</button>
+          <button onClick={() => updateDonasiTakjilStatus(stats.isOpen)} style={stats.isOpen ? btnActive : btnClosed}>
+            {stats.isOpen ? '🟢 Buka' : '🔴 Tutup'}
           </button>
         </div>
       </div>
@@ -264,3 +264,28 @@ const btnVerify = { background: '#1a5d1a', color: 'white', border: 'none', width
 const btnDelete = { background: '#fee2e2', color: '#ef4444', border: 'none', width: '32px', height: '32px', borderRadius: '8px', cursor: 'pointer' };
 const badgeType = (t) => ({ background: t === 'Nasi Box' ? '#eff6ff' : '#fff7ed', color: t === 'Nasi Box' ? '#1e40af' : '#9a3412', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold' });
 const emptyData = { textAlign: 'center', padding: '40px', color: '#94a3b8', fontStyle: 'italic' };
+<style jsx>{`
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 15px;
+  }
+  
+  @media (max-width: 600px) {
+    .admin-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .action-group {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* Tombol jadi grid 2 kolom di HP */
+      gap: 10px;
+    }
+    .btn-full-mobile {
+      grid-column: span 2; /* Tombol status lebar penuh */
+    }
+  }
+`}</style>
