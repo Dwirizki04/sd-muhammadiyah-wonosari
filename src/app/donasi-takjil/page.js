@@ -94,7 +94,7 @@ export default function PublicDonasiTakjil() {
     <div style={pageWrapper}>
       <div style={containerStyle}>
         <div style={headerSection}>
-          <h1 style={titleStyle}>Infaq Takjil Ramadhan</h1>
+          <h1 style={titleStyle}>Sedekah Takjil Ramadhan</h1>
           <p style={subTitleStyle}>SD Muhammadiyah Wonosari</p>
         </div>
 

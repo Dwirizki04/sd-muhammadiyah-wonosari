@@ -69,7 +69,7 @@ export default function AdminDonasiTakjil() {
     <div style={mainContainer}>
       <div className="admin-header" style={headerFlex}>
         <div>
-          <h1 style={titleStyle}>Panel Infaq Takjil</h1>
+          <h1 style={titleStyle}>Panel Sedekah Takjil</h1>
           <p style={subTitleStyle}>Pantau porsi masuk secara real-time</p>
         </div>
         <div style={actionGroup}>
