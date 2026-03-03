@@ -1,28 +1,43 @@
 // src/components/Navbar.jsx
 "use client"; 
 
-import { useState, useEffect } from 'react'; // Tambahkan useEffect
+import { useState, useEffect } from 'react'; 
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { db } from '@/lib/firebase'; // Import database
-import { doc, onSnapshot } from 'firebase/firestore'; // Import fungsi snapshot
+import { db } from '@/lib/firebase'; 
+import { doc, onSnapshot } from 'firebase/firestore'; 
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false); 
-  const [isDonationOpen, setIsDonationOpen] = useState(false); // State saklar donasi
+  const [isDonationOpen, setIsDonationOpen] = useState(false); // State saklar donasi reguler
+  const [isTakjilOpen, setIsTakjilOpen] = useState(false); // State saklar donasi takjil
   const pathname = usePathname(); 
 
   const isActive = (path) => pathname === path ? 'active' : '';
 
-  // Pantau status donasi dari Firebase
+  // Pantau status dari Firebase
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "site_settings", "donation_stats"), (doc) => {
-      if (doc.exists()) {
-        setIsDonationOpen(doc.data().isOpen);
+    // 1. Listener Donasi Pembangunan (Reguler)
+    const unsubDonasi = onSnapshot(doc(db, "site_settings", "donation_stats"), (docSnap) => {
+      if (docSnap.exists()) {
+        setIsDonationOpen(docSnap.data().isOpen);
       }
     });
-    return () => unsub();
+
+    // 2. Listener Donasi Takjil 
+    // (Menggunakan path 'settings' / 'donasi_takjil_stats' sesuai kode admin sebelumnya)
+    const unsubTakjil = onSnapshot(doc(db, "settings", "donasi_takjil_stats"), (docSnap) => {
+      if (docSnap.exists()) {
+        setIsTakjilOpen(docSnap.data().isOpen);
+      }
+    });
+
+    // Bersihkan listener saat komponen unmount
+    return () => {
+      unsubDonasi();
+      unsubTakjil();
+    };
   }, []);
 
   return (
@@ -58,10 +73,17 @@ export default function Navbar() {
                 <li className={isActive('/unggulan')}><Link href="/unggulan" onClick={() => setIsOpen(false)}>Program Unggulan</Link></li>
                 <li className={isActive('/ekstrakurikuler')}><Link href="/ekstrakurikuler" onClick={() => setIsOpen(false)}>Ekstrakurikuler</Link></li>
                 
-                {/* MENU DONASI KONDISIONAL */}
+                {/* MENU DONASI PEMBANGUNAN */}
                 {isDonationOpen && (
                   <li className={isActive('/donasi')}>
                     <Link href="/donasi" onClick={() => setIsOpen(false)}>Donasi</Link>
+                  </li>
+                )}
+
+                {/* --- MENU DONASI TAKJIL (BARU) --- */}
+                {isTakjilOpen && (
+                  <li className={isActive('/donasi-takjil')}>
+                    <Link href="/donasi-takjil" onClick={() => setIsOpen(false)}>Donasi Takjil</Link>
                   </li>
                 )}
                 
