@@ -85,7 +85,7 @@ export default function PublicDonasiTakjil() {
                     <label style={labelStyle}>Kelas *</label>
                     <select value={form.studentClass} onChange={e => setForm({...form, studentClass: e.target.value})} style={inputStyle} required>
                       <option value="">-- Pilih Kelas --</option>
-                      {['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B','6A','6B'].map(k => <option key={k} value={k}>Kelas {k}</option>)}
+                      {['1A','1B','2A','2B','3A','3B','4A','4B','4C','5A','5B','6A','6B','6C'].map(k => <option key={k} value={k}>Kelas {k}</option>)}
                     </select>
                   </div>
 
