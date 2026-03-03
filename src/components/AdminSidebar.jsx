@@ -26,8 +26,9 @@ export default function AdminSidebar() {
   const menuItems = [
     { name: '📊 Data PPDB', path: '/admin/ppdb' },
     { name: '💰 Data Donasi', path: '/admin/donasi' }, // Menyesuaikan dengan file 
+    { name: '📋 Data Donasi Takjil', path: '/admin/donasi-takjil' },
     { name: '📰 Kelola Berita', path: '/admin/news' },
-    { name: '⚙️ Pengaturan Tema', path: '/admin/settings' },
+    { name: '⚙️ Pengaturan Tema', path: '/admin/settings' }
   ];
 
   return (
