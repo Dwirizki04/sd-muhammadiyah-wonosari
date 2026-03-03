@@ -120,119 +120,108 @@ export const checkPPDBStatus = async (nik) => {
     throw error;
   }
 };
-// ==========================================
-// 3. DONASI TAKJIL SERVICES (FIXED)
-// ==========================================
 
-// 1. Subscribe Data List
+// ==========================================
+// 2. DONASI TAKJIL SERVICES (BISA DUA SEKALIGUS)
+// ==========================================
 export const subscribeDonasiTakjil = (callback) => {
   const q = query(collection(db, 'donasi_takjil'), orderBy('date', 'desc'));
-  return onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(data);
-  });
+  return onSnapshot(q, (snapshot) => { callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); });
 };
 
-// 2. Subscribe Stats & Target
 export const subscribeDonasiTakjilStatus = (callback) => {
   const docRef = doc(db, 'settings', 'donasi_takjil_stats');
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
-      callback(docSnap.data());
+      const data = docSnap.data();
+      callback({
+        isOpen: data.isOpen ?? true,
+        collectedNasi: Number(data.collectedNasi) || 0,
+        targetNasi: Number(data.targetNasi) || 0,
+        collectedMinuman: Number(data.collectedMinuman) || 0,
+        targetMinuman: Number(data.targetMinuman) || 0
+      });
     } else {
-      setDoc(docRef, { isOpen: true, collected: 0, target: 100 });
-      callback({ isOpen: true, collected: 0, target: 100 });
+      const defaultData = { isOpen: true, collectedNasi: 0, targetNasi: 200, collectedMinuman: 0, targetMinuman: 200 };
+      setDoc(docRef, defaultData);
+      callback(defaultData);
     }
   });
 };
 
-// 3. Submit dengan Proteksi Kuota (HARD LIMIT)
 export const submitDonasiTakjil = async (data) => {
   try {
     const statsRef = doc(db, 'settings', 'donasi_takjil_stats');
     const statsSnap = await getDoc(statsRef);
     
     if (statsSnap.exists()) {
-      const { collected, target } = statsSnap.data();
-      const remaining = target - collected;
-      const amountToSubmit = Number(data.quantity);
+      const stats = statsSnap.data();
+      const qtyNasi = Number(data.qtyNasi) || 0;
+      const qtyMinum = Number(data.qtyMinum) || 0;
+      
+      const sisaNasi = Math.max(0, (Number(stats.targetNasi) || 0) - (Number(stats.collectedNasi) || 0));
+      const sisaMinum = Math.max(0, (Number(stats.targetMinuman) || 0) - (Number(stats.collectedMinuman) || 0));
 
-      if (collected >= target) {
-        return { success: false, error: "Afwan, target porsi sudah terpenuhi!" };
+      // Proteksi Ganda
+      if (qtyNasi > sisaNasi && Number(stats.targetNasi) > 0) return { success: false, error: `Sisa Nasi Box hanya ${sisaNasi} porsi.` };
+      if (qtyMinum > sisaMinum && Number(stats.targetMinuman) > 0) return { success: false, error: `Sisa Minuman hanya ${sisaMinum} porsi.` };
+      if (qtyNasi === 0 && qtyMinum === 0) return { success: false, error: `Silakan isi jumlah porsi donasi.` };
+
+      const promises = [];
+      const statsUpdate = {};
+
+      // Jika isi Nasi, buat dokumen Nasi
+      if (qtyNasi > 0) {
+        promises.push(addDoc(collection(db, 'donasi_takjil'), {
+          studentName: data.studentName, studentClass: data.studentClass,
+          takjilType: 'Nasi Box', amount: qtyNasi, isVerified: true, date: serverTimestamp()
+        }));
+        statsUpdate.collectedNasi = increment(qtyNasi);
       }
-      if (amountToSubmit > remaining) {
-        return { success: false, error: `Maaf, sisa kuota hanya ${remaining} porsi lagi.` };
+
+      // Jika isi Minum, buat dokumen Minum
+      if (qtyMinum > 0) {
+        promises.push(addDoc(collection(db, 'donasi_takjil'), {
+          studentName: data.studentName, studentClass: data.studentClass,
+          takjilType: 'Minuman', amount: qtyMinum, isVerified: true, date: serverTimestamp()
+        }));
+        statsUpdate.collectedMinuman = increment(qtyMinum);
       }
 
-      // PROSES SIMPAN DATA (Set isVerified: true secara otomatis)
-      await addDoc(collection(db, 'donasi_takjil'), {
-        studentName: data.studentName,
-        studentClass: data.studentClass,
-        takjilType: data.takjilType,
-        amount: amountToSubmit,
-        message: data.message || '',
-        isVerified: true, // <--- OTOMATIS TRUE
-        date: serverTimestamp()
-      });
-
-      // PROSES UPDATE TOTAL TERKUMPUL (Langsung tambah angka)
-      await updateDoc(statsRef, {
-        collected: increment(amountToSubmit)
-      });
-
+      // Eksekusi semua secara bersamaan
+      await Promise.all(promises);
+      await updateDoc(statsRef, statsUpdate);
+      
       return { success: true };
     }
+    return { success: false, error: "Data statistik belum siap. Silakan muat ulang halaman." };
   } catch (error) {
-    console.error("Error auto-submit:", error);
-    return { success: false, error: "Terjadi kesalahan koneksi." };
+    console.error(error);
+    return { success: false, error: "Gagal terhubung ke database. Cek koneksi internet Anda." };
   }
 };
 
-// 4. Verifikasi Infaq
-export const verifyDonationTakjilEntry = async (id, quantity) => {
-  try {
-    const docRef = doc(db, 'donasi_takjil', id);
-    await updateDoc(docRef, { isVerified: true });
-
-    const statsRef = doc(db, 'settings', 'donasi_takjil_stats');
-    await updateDoc(statsRef, {
-      collected: increment(Number(quantity))
-    });
-
-    Swal.fire('Berhasil!', 'Takjil telah diverifikasi.', 'success');
-  } catch (error) {
-    Swal.fire('Error!', 'Gagal verifikasi.', 'error');
-  }
-};
-
-// 5. Hapus Data & Koreksi Total
-export const deleteDonationTakjilEntry = async (id) => {
-  try {
-    const docRef = doc(db, 'donasi_takjil', id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      // Karena semua otomatis terverifikasi, maka setiap hapus wajib kurangi total
-      const statsRef = doc(db, 'settings', 'donasi_takjil_stats');
-      await updateDoc(statsRef, {
-        collected: increment(-Number(data.amount))
-      });
-      
-      await deleteDoc(docRef);
-    }
-  } catch (error) {
-    console.error("Gagal hapus:", error);
-  }
-};
-
-// 6. Update Target & Status
-export const updateDonasiTakjilTarget = async (newTarget) => {
+export const updateDonasiTakjilTarget = async (type, newValue) => {
   const docRef = doc(db, 'settings', 'donasi_takjil_stats');
-  await updateDoc(docRef, { target: Number(newTarget) });
+  await updateDoc(docRef, { [type === 'Nasi Box' ? 'targetNasi' : 'targetMinuman']: Number(newValue) });
 };
 
 export const updateDonasiTakjilStatus = async (currentStatus) => {
   const docRef = doc(db, 'settings', 'donasi_takjil_stats');
   await updateDoc(docRef, { isOpen: !currentStatus });
+};
+
+export const deleteDonationTakjilEntry = async (id) => {
+  try {
+    const docRef = doc(db, 'donasi_takjil', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const isNasi = data.takjilType === 'Nasi Box';
+      await updateDoc(doc(db, 'settings', 'donasi_takjil_stats'), {
+        [isNasi ? 'collectedNasi' : 'collectedMinuman']: increment(-Number(data.amount || 0))
+      });
+      await deleteDoc(docRef);
+    }
+  } catch (error) { console.error(error); }
 };
