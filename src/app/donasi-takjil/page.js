@@ -43,7 +43,7 @@ export default function PublicDonasiTakjil() {
     if (res.success) {
       Swal.fire({
         title: 'Alhamdulillah',
-        text: 'Terimakasih Ayah/Bunda atas infaq takjilnya. Semoga Allah Swt selalu melimpahkan rejeki dan menjadikannya ladang pahala untuk keluarga.',
+        text: 'Terimakasih Ayah/Bunda atas infaq takjilnya. Semoga Allah Swt selalu melimpahkan rejeki dan menjadikannya ladang pahala.',
         icon: 'success', confirmButtonText: 'Aamiin', confirmButtonColor: '#1a5d1a'
       });
       setForm({ studentName: '', studentClass: '', qtyNasi: '', qtyMinum: '' });
@@ -181,9 +181,10 @@ export default function PublicDonasiTakjil() {
                 <span>📋</span> Catatan
               </h4>
               <ul style={noteListStyle}>
+                <li><b>Makanan:</b> Nasi Box (Lauk Ayam).</li>
                 <li><b>Minuman:</b> Tanpa pemanis buatan & pengawet.</li>
-                <li><b>Nasi Box:</b> Menu segar & higienis.</li>
-                <li><b>Waktu:</b> Maksimal pukul 16.00 WIB di kantor sekolah.</li>
+                <li><b>Waktu Pengantaran:</b> Maksimal pukul 16.00 WIB.</li>
+                <li><b>Tempat Pengumpulan Takjil:</b> Di ruang kelas 3A.</li>
               </ul>
             </div>
           </div>
