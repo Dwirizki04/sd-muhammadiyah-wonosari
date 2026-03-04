@@ -183,7 +183,7 @@ export default function PublicDonasiTakjil() {
               <ul style={noteListStyle}>
                 <li><b>Makanan:</b> Nasi Box (Lauk Ayam).</li>
                 <li><b>Minuman:</b> Tanpa pemanis buatan & pengawet.</li>
-                <li><b>Waktu Pengantaran:</b> Maksimal pukul 16.00 WIB.</li>
+                <li><b>Waktu Pengantaran:</b> Tanggal 11 Maret 2026, Maksimal pukul 16.00 WIB.</li>
                 <li><b>Tempat Pengumpulan Takjil:</b> Di ruang kelas 3A.</li>
               </ul>
             </div>
