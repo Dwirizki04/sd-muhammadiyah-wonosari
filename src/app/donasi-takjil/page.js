@@ -134,7 +134,7 @@ export default function PublicDonasiTakjil() {
                       
                       {/* Kotak Nasi Box */}
                       <div style={boxInputStyle(isNasiFull)}>
-                        <label style={labelTakjil}>🍱 Nasi Box (ayam)</label>
+                        <label style={labelTakjil}>🍱 Nasi Box (Ayam)</label>
                         <input 
                           type="number" 
                           value={form.qtyNasi} 
