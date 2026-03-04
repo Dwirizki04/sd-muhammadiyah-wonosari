@@ -168,7 +168,7 @@ export default function PublicDonasiTakjil() {
                   </div>
 
                   <button type="submit" disabled={loading} style={btnSubmit(loading)}>
-                    {loading ? 'Memproses Data...' : 'Kirim Infaq Takjil'}
+                    {loading ? 'Memproses Data...' : 'Kirim Sedekah Takjil'}
                   </button>
                 </form>
               )}
