@@ -83,7 +83,7 @@ export default function Navbar() {
                 {/* --- MENU DONASI TAKJIL (BARU) --- */}
                 {isTakjilOpen && (
                   <li className={isActive('/donasi-takjil')}>
-                    <Link href="/donasi-takjil" onClick={() => setIsOpen(false)}>Donasi Takjil</Link>
+                    <Link href="/donasi-takjil" onClick={() => setIsOpen(false)}>Sedekah Takjil</Link>
                   </li>
                 )}
                 
