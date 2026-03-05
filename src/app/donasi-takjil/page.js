@@ -71,7 +71,7 @@ export default function PublicDonasiTakjil() {
     setLoading(false);
 
     if (res.success) {
-      Swal.fire({ title: 'Alhamdulillah', text: 'Terimakasih Ayah/Bunda atas infaq takjilnya.', icon: 'success', confirmButtonColor: '#1a5d1a' });
+      Swal.fire({ title: 'Alhamdulillah', text: 'Terimakasih Ayah/Bunda atas sedekah takjilnya. Semoga Allah Swt selalu melimpahkan rejeki dan menjadikannya ladang pahala', icon: 'success', confirmButtonText: 'Aamiin', confirmButtonColor: '#1a5d1a' });
       setForm({ studentName: '', studentClass: '', qtyNasi: '', qtyMinum: '' });
     }
   };
@@ -114,7 +114,7 @@ export default function PublicDonasiTakjil() {
                     </select>
                   </div>
                   <div style={{ marginTop: '10px' }}>
-                    <p style={labelStyle}>Jumlah Porsi yang Diinfaqkan:</p>
+                    <p style={labelStyle}>Jumlah Porsi yang Disedekahkan:</p>
                     <div className="grid-mobile">
                       <div style={boxInputStyle(quota.isNasiFull)}>
                         <label style={labelTakjil}>🍱 Nasi Box (Ayam)</label>
