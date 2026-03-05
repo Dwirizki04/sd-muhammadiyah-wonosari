@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // Menambahkan useMemo
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import { 
@@ -19,6 +19,23 @@ export default function AdminDonasiTakjil() {
     const unsubStats = subscribeDonasiTakjilStatus((data) => setStats(data));
     return () => { unsubDonasi(); unsubStats(); };
   }, []);
+
+  // --- LOGIKA PERBAIKAN BUG (TANPA MERUBAH ISI LAINNYA) ---
+  const totalDonaturUnik = useMemo(() => {
+    return new Set(
+      donations.map(item => `${item.studentName}-${item.studentClass}`.toLowerCase().trim())
+    ).size;
+  }, [donations]);
+
+  const progress = useMemo(() => {
+    const n = stats.targetNasi > 0 ? Math.round((stats.collectedNasi / stats.targetNasi) * 100) : 0;
+    const m = stats.targetMinuman > 0 ? Math.round((stats.collectedMinuman / stats.targetMinuman) * 100) : 0;
+    return {
+      nasi: Math.min(n, 100),
+      minum: Math.min(m, 100)
+    };
+  }, [stats.collectedNasi, stats.targetNasi, stats.collectedMinuman, stats.targetMinuman]);
+  // -------------------------------------------------------
 
   const handleExportExcel = () => {
     if (donations.length === 0) return Swal.fire('Gagal', 'Tidak ada data untuk diekspor', 'error');
@@ -61,10 +78,6 @@ export default function AdminDonasiTakjil() {
     }).then((res) => { if (res.isConfirmed) deleteDonationTakjilEntry(id); });
   };
 
-  // Proteksi persen agar tidak NaN
-  const safePercNasi = stats.targetNasi > 0 ? Math.round((stats.collectedNasi / stats.targetNasi) * 100) : 0;
-  const safePercMinum = stats.targetMinuman > 0 ? Math.round((stats.collectedMinuman / stats.targetMinuman) * 100) : 0;
-
   return (
     <div style={mainContainer}>
       <div className="admin-header" style={headerFlex}>
@@ -85,16 +98,17 @@ export default function AdminDonasiTakjil() {
         <div style={cardStat('#1a5d1a')}>
           <small style={statLabel}>🍱 NASI BOX</small>
           <div style={statValue}>{stats.collectedNasi} / {stats.targetNasi || 0}</div>
-          <small style={{color:'#64748b'}}>Terpenuhi: {Math.min(safePercNasi, 100)}%</small>
+          <small style={{color:'#64748b'}}>Terpenuhi: {progress.nasi}%</small>
         </div>
         <div style={cardStat('#fbbf24')}>
           <small style={statLabel}>🥤 MINUMAN</small>
           <div style={statValue}>{stats.collectedMinuman} / {stats.targetMinuman || 0}</div>
-          <small style={{color:'#64748b'}}>Terpenuhi: {Math.min(safePercMinum, 100)}%</small>
+          <small style={{color:'#64748b'}}>Terpenuhi: {progress.minum}%</small>
         </div>
         <div style={cardStat('#64748b')}>
           <small style={statLabel}>TOTAL DONATUR</small>
-          <div style={statValue}>{donations.length} <span style={{fontSize:'1rem'}}>Orang</span></div>
+          {/* MENGGUNAKAN LOGIKA UNIK AGAR NAMA SAMA DIHITUNG 1 */}
+          <div style={statValue}>{totalDonaturUnik} <span style={{fontSize:'1rem'}}>Orang</span></div>
         </div>
       </div>
 
@@ -131,6 +145,7 @@ export default function AdminDonasiTakjil() {
   );
 }
 
+// STYLING (SAMA PERSIS DENGAN KODE ASLI ANDA)
 const mainContainer = { padding: '30px', backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'Poppins, sans-serif' };
 const headerFlex = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', gap: '20px' };
 const titleStyle = { margin: 0, fontWeight: '900', color: '#1e293b', fontSize: '1.8rem' };
