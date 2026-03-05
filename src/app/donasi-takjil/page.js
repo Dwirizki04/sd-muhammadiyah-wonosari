@@ -71,7 +71,7 @@ export default function PublicDonasiTakjil() {
     setLoading(false);
 
     if (res.success) {
-      Swal.fire({ title: 'Alhamdulillah', text: 'Terimakasih kepada Ayah/Bunda yang telah memberikan takjil untuk kegiatan buka bersama siswa SD Muhammadiyah Wonosari. Semoga Allah Swt selalu melimpahkan rejeki dan apa yang diberikan menjadi  ladang pahala dan keberkahan untuk Ayah/Bunda.', icon: 'success', confirmButtonText: 'Aamiin', confirmButtonColor: '#1a5d1a' });
+      Swal.fire({ title: 'Alhamdulillah', text: 'Terimakasih kepada Ayah/Bunda yang telah memberikan takjil untuk kegiatan buka bersama siswa SD Muhammadiyah Wonosari. Semoga Allah Swt selalu melimpahkan rejeki dan apa yang diberikan menjadi ladang pahala dan keberkahan.', icon: 'success', confirmButtonText: 'Aamiin', confirmButtonColor: '#1a5d1a' });
       setForm({ studentName: '', studentClass: '', qtyNasi: '', qtyMinum: '' });
     }
   };
