@@ -5,6 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Footer() {
+  // Konstanta untuk mempermudah update link di masa depan
+  const socialLinks = {
+    instagram: "https://www.instagram.com/sdmuh_wonosari",
+    youtube: "https://www.youtube.com/@muhammadiyahwonosari29",
+    whatsapp: "https://wa.me/6285226443646" // Menggunakan nomor dari info kontak Anda
+  };
+
   return (
     <footer className="site-footer">
         <div className="container">
@@ -12,7 +19,7 @@ export default function Footer() {
             <div className="footer-logo">
                 <div style={{ position: 'relative', width: '60px', height: '60px' }}>
                     <Image 
-                        src="/images/logo sdm woonsa.jpg" // Pastikan nama file sesuai (jpg/png)
+                        src="/images/logo sdm woonsa.jpg" 
                         alt="Logo SD Muhammadiyah Wonosari" 
                         fill
                         style={{ objectFit: 'contain', borderRadius: '50%' }}
@@ -27,10 +34,15 @@ export default function Footer() {
                     <h3>Tentang Kami</h3>
                     <p>SD Muhammadiyah Wonosari berkomitmen tidak hanya berfokus pada pendidikan akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter Islami.</p>
                     <div className="social-links">
-                        <a href="#" className="social-link" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
-                        <a href="#" className="social-link" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-                        <a href="#" className="social-link" aria-label="YouTube"><i className="fab fa-youtube"></i></a>
-                        <a href="#" className="social-link" aria-label="WhatsApp"><i className="fab fa-whatsapp"></i></a>
+                        <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
+                            <i className="fab fa-instagram"></i>
+                        </a>
+                        <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="YouTube">
+                            <i className="fab fa-youtube"></i>
+                        </a>
+                        <a href={socialLinks.whatsapp} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="WhatsApp">
+                            <i className="fab fa-whatsapp"></i>
+                        </a>
                     </div>
                 </div>
                 
