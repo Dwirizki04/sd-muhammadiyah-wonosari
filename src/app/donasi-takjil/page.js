@@ -144,6 +144,12 @@ export default function PublicDonasiTakjil() {
                 <li><b>Waktu Pengantaran:</b> Tanggal 11 Maret 2026, Maksimal pukul 16.00 WIB.</li>
                 <li><b>Tempat Pengumpulan Takjil:</b> Di ruang kelas 3A.</li>
               </ul>
+              <h4 style={{ color: '#1a5d1a', marginTop: '20px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>📌</span> Ketentuan
+              </h4>
+              <ul style={noteListStyle}>
+                <li><b>Untuk pengisian Minum Aqua 1 Dus harap isi dengan 1</b></li>
+              </ul>
             </div>
           </div>
         </div>
