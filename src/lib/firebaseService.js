@@ -124,11 +124,15 @@ export const checkPPDBStatus = async (nik) => {
 // ==========================================
 // 2. DONASI TAKJIL SERVICES (BISA DUA SEKALIGUS)
 // ==========================================
+/**
+ * --- DONASI TAKJIL SERVICES (FIXED) ---
+ */
 export const subscribeDonasiTakjil = (callback) => {
   const q = query(collection(db, 'donasi_takjil'), orderBy('date', 'desc'));
   return onSnapshot(q, (snapshot) => { callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); });
 };
 
+// FIX: Menghapus setDoc otomatis agar tidak terjadi reset data saat glitch koneksi
 export const subscribeDonasiTakjilStatus = (callback) => {
   const docRef = doc(db, 'settings', 'donasi_takjil_stats');
   return onSnapshot(docRef, (docSnap) => {
@@ -142,9 +146,8 @@ export const subscribeDonasiTakjilStatus = (callback) => {
         targetMinuman: Number(data.targetMinuman) || 0
       });
     } else {
-      const defaultData = { isOpen: true, collectedNasi: 0, targetNasi: 200, collectedMinuman: 0, targetMinuman: 200 };
-      setDoc(docRef, defaultData);
-      callback(defaultData);
+      // Jika dokumen belum ada, kirim data default ke UI saja, jangan tulis ke DB dulu
+      callback({ isOpen: true, collectedNasi: 0, targetNasi: 400, collectedMinuman: 0, targetMinuman: 400 });
     }
   });
 };
@@ -152,57 +155,57 @@ export const subscribeDonasiTakjilStatus = (callback) => {
 export const submitDonasiTakjil = async (data) => {
   try {
     const statsRef = doc(db, 'settings', 'donasi_takjil_stats');
-    const statsSnap = await getDoc(statsRef);
     
-    if (statsSnap.exists()) {
-      const stats = statsSnap.data();
-      const qtyNasi = Number(data.qtyNasi) || 0;
-      const qtyMinum = Number(data.qtyMinum) || 0;
-      
-      const sisaNasi = Math.max(0, (Number(stats.targetNasi) || 0) - (Number(stats.collectedNasi) || 0));
-      const sisaMinum = Math.max(0, (Number(stats.targetMinuman) || 0) - (Number(stats.collectedMinuman) || 0));
+    // Gunakan setDoc dengan merge: true agar dokumen tercipta jika belum ada tanpa menghapus data
+    await setDoc(statsRef, { updatedAt: serverTimestamp() }, { merge: true });
+    
+    const statsSnap = await getDoc(statsRef);
+    const stats = statsSnap.data();
+    const qtyNasi = Number(data.qtyNasi) || 0;
+    const qtyMinum = Number(data.qtyMinum) || 0;
+    
+    const currentCollectedNasi = Number(stats.collectedNasi) || 0;
+    const currentCollectedMinuman = Number(stats.collectedMinuman) || 0;
+    const targetNasi = Number(stats.targetNasi) || 0;
+    const targetMinuman = Number(stats.targetMinuman) || 0;
 
-      // Proteksi Ganda
-      if (qtyNasi > sisaNasi && Number(stats.targetNasi) > 0) return { success: false, error: `Sisa Nasi Box hanya ${sisaNasi} porsi.` };
-      if (qtyMinum > sisaMinum && Number(stats.targetMinuman) > 0) return { success: false, error: `Sisa Minuman hanya ${sisaMinum} porsi.` };
-      if (qtyNasi === 0 && qtyMinum === 0) return { success: false, error: `Silakan isi jumlah porsi donasi.` };
+    const sisaNasi = targetNasi > 0 ? Math.max(0, targetNasi - currentCollectedNasi) : 999;
+    const sisaMinum = targetMinuman > 0 ? Math.max(0, targetMinuman - currentCollectedMinuman) : 999;
 
-      const promises = [];
-      const statsUpdate = {};
+    if (qtyNasi > sisaNasi && targetNasi > 0) return { success: false, error: `Sisa Nasi Box hanya ${sisaNasi} porsi.` };
+    if (qtyMinum > sisaMinum && targetMinuman > 0) return { success: false, error: `Sisa Minuman hanya ${sisaMinum} porsi.` };
 
-      // Jika isi Nasi, buat dokumen Nasi
-      if (qtyNasi > 0) {
-        promises.push(addDoc(collection(db, 'donasi_takjil'), {
-          studentName: data.studentName, studentClass: data.studentClass,
-          takjilType: 'Nasi Box', amount: qtyNasi, isVerified: true, date: serverTimestamp()
-        }));
-        statsUpdate.collectedNasi = increment(qtyNasi);
-      }
+    const promises = [];
+    const statsUpdate = {};
 
-      // Jika isi Minum, buat dokumen Minum
-      if (qtyMinum > 0) {
-        promises.push(addDoc(collection(db, 'donasi_takjil'), {
-          studentName: data.studentName, studentClass: data.studentClass,
-          takjilType: 'Minuman', amount: qtyMinum, isVerified: true, date: serverTimestamp()
-        }));
-        statsUpdate.collectedMinuman = increment(qtyMinum);
-      }
-
-      // Eksekusi semua secara bersamaan
-      await Promise.all(promises);
-      await updateDoc(statsRef, statsUpdate);
-      
-      return { success: true };
+    if (qtyNasi > 0) {
+      promises.push(addDoc(collection(db, 'donasi_takjil'), {
+        studentName: data.studentName, studentClass: data.studentClass,
+        takjilType: 'Nasi Box', amount: qtyNasi, isVerified: true, date: serverTimestamp()
+      }));
+      statsUpdate.collectedNasi = increment(qtyNasi);
     }
-    return { success: false, error: "Data statistik belum siap. Silakan muat ulang halaman." };
+
+    if (qtyMinum > 0) {
+      promises.push(addDoc(collection(db, 'donasi_takjil'), {
+        studentName: data.studentName, studentClass: data.studentClass,
+        takjilType: 'Minuman', amount: qtyMinum, isVerified: true, date: serverTimestamp()
+      }));
+      statsUpdate.collectedMinuman = increment(qtyMinum);
+    }
+
+    await Promise.all(promises);
+    await updateDoc(statsRef, statsUpdate);
+    return { success: true };
   } catch (error) {
-    console.error(error);
-    return { success: false, error: "Gagal terhubung ke database. Cek koneksi internet Anda." };
+    console.error("Submit Error:", error);
+    return { success: false, error: "Gagal menyimpan data." };
   }
 };
 
 export const updateDonasiTakjilTarget = async (type, newValue) => {
   const docRef = doc(db, 'settings', 'donasi_takjil_stats');
+  // Gunakan updateDoc agar hanya field target yang berubah
   await updateDoc(docRef, { [type === 'Nasi Box' ? 'targetNasi' : 'targetMinuman']: Number(newValue) });
 };
 
@@ -223,5 +226,5 @@ export const deleteDonationTakjilEntry = async (id) => {
       });
       await deleteDoc(docRef);
     }
-  } catch (error) { console.error(error); }
+  } catch (error) { console.error("Delete Error:", error); }
 };
