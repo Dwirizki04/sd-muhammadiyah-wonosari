@@ -254,13 +254,156 @@ img { max-width: 100%; display: block; }
 }
 
 /* --- 5. FOOTER --- */
-.site-footer { background: #1a252f; color: #e0e0e0; padding: 60px 0 30px; margin-top: auto; border-top: 5px solid #1a5d1a; }
-.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px; }
-.footer-col h3 { color: #d4af37; font-size: 1.2rem; margin-bottom: 20px; position: relative; display: inline-block; }
-.footer-col h3::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 3px; background: #1a5d1a; border-radius: 2px; }
-.footer-col ul li { margin-bottom: 10px; }
-.footer-col ul li a:hover { color: #d4af37; padding-left: 5px; }
-.copyright { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 40px; color: #888; }
+/* --- FOOTER STYLES (REVISED) --- */
+.site-footer {
+    background: #0f172a;
+    color: var(--white);
+    padding: 80px 0 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.footer-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.footer-logo h3 {
+    font-size: 2.2rem;
+    margin-top: 15px;
+    font-weight: 700;
+}
+
+/* KUNCI: Gunakan display block/flex default untuk mobile, grid untuk desktop */
+.footer-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    margin-bottom: 60px;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center di mobile */
+    text-align: center;
+}
+
+.footer-col h3 {
+    color: var(--accent-gold);
+    margin-bottom: 25px;
+    font-size: 1.6rem;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-col h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Center underline di mobile */
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: var(--primary-green);
+}
+
+.footer-col p {
+    color: #cbd5e1;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+/* Media Query untuk Desktop & Split Screen yang lebih lebar */
+@media (min-width: 992px) {
+    .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        text-align: left;
+    }
+
+    .footer-col {
+        align-items: flex-start; /* Aliran kiri di desktop */
+        text-align: left;
+    }
+
+    .footer-col h3::after {
+        left: 0;
+        transform: none;
+    }
+
+    .social-links {
+        justify-content: flex-start;
+    }
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    justify-content: center;
+}
+
+@media (min-width: 992px) {
+    .social-links {
+        justify-content: flex-start;
+    }
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.social-link:hover {
+    background: var(--primary-green);
+    transform: translateY(-3px);
+}
+
+.footer-links, .footer-contact {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.footer-links li, .footer-contact li {
+    margin-bottom: 12px;
+    color: #cbd5e1;
+}
+
+.footer-links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--accent-gold);
+    padding-left: 5px;
+}
+
+.footer-contact i {
+    color: var(--primary-green);
+    margin-right: 10px;
+}
+
+.copyright {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    padding: 25px 0;
+    color: #64748b;
+    font-size: 1rem;
+}
 
 /* --- 6. FORM & INPUTS --- */
 .contact-form-container {

@@ -5,11 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Footer() {
-  // Konstanta untuk mempermudah update link di masa depan
+  // Konstanta tautan media sosial
   const socialLinks = {
+    facebook: "https://www.facebook.com/sdmuhammadiyahwonosari",
     instagram: "https://www.instagram.com/sdmuh_wonosari",
     youtube: "https://www.youtube.com/@muhammadiyahwonosari29",
-    whatsapp: "https://wa.me/6285226443646" // Menggunakan nomor dari info kontak Anda
+    whatsapp: "https://wa.me/6285226443646"
   };
 
   return (
@@ -34,6 +35,9 @@ export default function Footer() {
                     <h3>Tentang Kami</h3>
                     <p>SD Muhammadiyah Wonosari berkomitmen tidak hanya berfokus pada pendidikan akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter Islami.</p>
                     <div className="social-links">
+                        <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Facebook">
+                            <i className="fab fa-facebook-f"></i>
+                        </a>
                         <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
                             <i className="fab fa-instagram"></i>
                         </a>
@@ -49,7 +53,7 @@ export default function Footer() {
                 {/* Kolom 2: Link Cepat */}
                 <div className="footer-col">
                     <h3>Link Cepat</h3>
-                    <ul>
+                    <ul className="footer-links">
                         <li><Link href="/">Beranda</Link></li>
                         <li><Link href="/about">Profil Sekolah</Link></li>
                         <li><Link href="/unggulan">Program Unggulan</Link></li>
@@ -61,10 +65,12 @@ export default function Footer() {
                 {/* Kolom 3: Kontak */}
                 <div className="footer-col">
                     <h3>Kontak Kami</h3>
-                    <p><i className="fas fa-map-marker-alt"></i> Jl. Sumber Agung, Tawarsari, Wonosari, Gunungkidul DIY</p>
-                    <p><i className="fas fa-phone"></i> 0852-2644-3646</p>
-                    <p><i className="fas fa-envelope"></i> sdmuri63@gmail.com</p>
-                    <p><i className="fas fa-clock"></i> Senin - Jumat: 07.00 - 15.00 WIB</p>
+                    <ul className="footer-contact">
+                        <li><i className="fas fa-map-marker-alt"></i> Jl. Sumber Agung, Tawarsari, Wonosari, Gunungkidul DIY</li>
+                        <li><i className="fas fa-phone"></i> 0852-2644-3646</li>
+                        <li><i className="fas fa-envelope"></i> sdmuri63@gmail.com</li>
+                        <li><i className="fas fa-clock"></i> Senin - Jumat: 07.00 - 15.00 WIB</li>
+                    </ul>
                 </div>
             </div>
             
