@@ -98,7 +98,7 @@ export default function PublicDonasiTakjil() {
                 <div style={{ textAlign: 'center', padding: '30px 10px' }}>
                   <div style={{ fontSize: '3.5rem', marginBottom:'10px' }}>🌙</div>
                   <h3 style={{ color: '#1a5d1a' }}>Program Ditutup</h3>
-                  <p style={{ color: '#64748b' }}>Jazakumullah Khairan atas niat baik Ayah/Bunda.</p>
+                  <p style={{ color: '#64748b' }}>Kami ucapkan Jazakumullah Khairan katsira kepada Ayah/Bunda yang telah menyalurkan sedekah takjil untuk kegiatan buka bersama siswa SD Muhammadiyah Wonosari. Semoga Allah Swt selalu melimpahkan rejeki dan apa yang diberikan menjadi ladang pahala dan keberkahan.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} style={formStyle}>
