@@ -7,7 +7,6 @@ import Image from 'next/image';
 export default function Footer() {
   // Konstanta tautan media sosial
   const socialLinks = {
-    facebook: "https://www.facebook.com/sdmuhammadiyahwonosari",
     instagram: "https://www.instagram.com/sdmuh_wonosari",
     youtube: "https://www.youtube.com/@muhammadiyahwonosari29",
     whatsapp: "https://wa.me/6285226443646"
@@ -35,9 +34,6 @@ export default function Footer() {
                     <h3>Tentang Kami</h3>
                     <p>SD Muhammadiyah Wonosari berkomitmen tidak hanya berfokus pada pendidikan akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter Islami.</p>
                     <div className="social-links">
-                        <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Facebook">
-                            <i className="fab fa-facebook-f"></i>
-                        </a>
                         <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
                             <i className="fab fa-instagram"></i>
                         </a>
