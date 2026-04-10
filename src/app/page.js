@@ -123,7 +123,7 @@ export default function Home() {
               Mencetak Generasi Qurani, Prestasi Tiada Henti
             </motion.p>
             <div className="hero-stats">
-              <div className="stat"><AnimatedCounter value={338} /><span className="label">Siswa Aktif</span></div>
+              <div className="stat"><AnimatedCounter value={337} /><span className="label">Siswa Aktif</span></div>
               <div className="stat"><AnimatedCounter value={23} /><span className="label">Guru Profesional</span></div>
               <div className="stat"><AnimatedCounter value={13} /><span className="label">Ruang Kelas</span></div>
               <div className="stat"><AnimatedCounter value={1963} /><span className="label">Tahun Berdiri</span></div>
