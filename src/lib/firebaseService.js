@@ -121,6 +121,18 @@ export const checkPPDBStatus = async (nik) => {
   }
 };
 
+export const isNikAlreadyRegistered = async (nik) => {
+    const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
+    const sanp = await getDocs(q);
+    return !sanp.empty;
+  };
+
+export const checkNikExists = async (nik) => {
+  const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
+  const snap = await getDocs(q);
+  return !snap.empty;
+}
+
 // ==========================================
 // 2. DONASI TAKJIL SERVICES (BISA DUA SEKALIGUS)
 // ==========================================

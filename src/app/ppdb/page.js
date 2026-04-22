@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { subscribePPDBStatus } from '@/lib/firebaseService'; 
+import { subscribePPDBStatus,  checkNikExists} from '@/lib/firebaseService'; 
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { style } from 'framer-motion/client';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PPDB() {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
@@ -24,64 +24,142 @@ export default function PPDB() {
     return () => unsub();
   }, []);
 
+  if (loadingStatus) return <div style={styles.centerBox}>Memeriksa Status Pendaftaran...</div>;
+  if (!isRegistrationOpen) {
+  return (
+    <div style={styles.pageBg}>
+      <div style={styles.container}>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }} 
+          animate={{ opacity: 1, scale: 1 }} 
+          style={styles.closedCard}
+        >
+          {/* Ikon Header */}
+          <div style={styles.closedIconBox}>
+            <motion.span 
+              animate={{ y: [0, -10, 0] }} 
+              transition={{ repeat: Infinity, duration: 2 }}
+              style={{ fontSize: '5rem' }}
+            >
+              🏫
+            </motion.span>
+          </div>
+
+          <h1 style={styles.closedTitle}>Pendaftaran Belum Aktif</h1>
+          
+          <p style={styles.closedText}>
+            Terima kasih atas ketertarikan Ayah & Bunda untuk bergabung bersama 
+            <br /> 
+            <strong style={{ color: '#1a5d1a' }}>SD Muhammadiyah Wonosari</strong>.
+          </p>
+
+          <div style={styles.closedNotice}>
+            Mohon maaf, saat ini sistem pendaftaran sedang <b>dinonaktifkan</b>. Silakan periksa kembali di lain waktu 
+            atau hubungi layanan Admin kami.
+          </div>
+
+          {/* Tombol Tindakan agar User tidak buntu */}
+          <div style={styles.closedActions}>
+            <Link href="/" style={styles.btnHome}>
+              🏠 Kembali ke Beranda
+            </Link>
+            <Link href="/ppdb/status" style={styles.btnCheck}>
+              🔍 Cek Status Pendaftaran
+            </Link>
+          </div>
+
+          <div style={styles.closedFooter}>
+            Butuh bantuan? <a href="https://wa.me/6285226443646" target="_blank" style={styles.waLink}>Hubungi Admin PPDB</a>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData(e.target);
+    const nik = formData.get("nik");
+
+    if (nik.length !== 16) {
+      return Swal.fire('NIK Tidak Valid', 'NIK Siswa harus 16 digit.', 'warning');
+    }
+
     setLoading(true);
     
-    // Menggunakan FormData agar lebih aman dan rapi
-    const formData = new FormData(e.target);
-
-    const dataPendaftaran = {
-      // --- I. IDENTITAS SISWA ---
-      namaLengkap: formData.get("nama_lengkap"),
-      nik: formData.get("nik"),
-      nisn: formData.get("nisn") || "-",
-      jenisKelamin: formData.get("jenis_kelamin"),
-      tempatLahir: formData.get("tempat_lahir"),
-      tanggalLahir: formData.get("tanggal_lahir"),
-      agama: formData.get("agama") || "Islam",
-      anakKe: formData.get("anak_ke"),
-      jumlahSaudara: formData.get("jumlah_saudara"),
-      citaCita: formData.get("cita_cita") || "-",
-      hobi: formData.get("hobi") || "-",
-
-      // --- II. ALAMAT ---
-      alamatJalan: formData.get("alamat_jalan"),
-      rt: formData.get("rt"),
-      rw: formData.get("rw"),
-      desaKelurahan: formData.get("desa"),
-      kecamatan: formData.get("kecamatan"),
-      kabupatenKota: formData.get("kabupaten") || "Gunungkidul",
-      kodePos: formData.get("kode_pos") || "-",
-
-      // --- III. DATA ORANG TUA ---
-      namaAyah: formData.get("nama_ayah"),
-      nikAyah: formData.get("nik_ayah"),
-      pendidikanAyah: formData.get("pendidikan_ayah"),
-      pekerjaanAyah: formData.get("pekerjaan_ayah"),
-      namaIbu: formData.get("nama_ibu"),
-      nikIbu: formData.get("nik_ibu"),
-      pendidikanIbu: formData.get("pendidikan_ibu"),
-      pekerjaanIbu: formData.get("pekerjaan_ibu"),
-      penghasilan: formData.get("penghasilan"),
-      noWa: formData.get("no_wa"),
-
-      status: 'pending',
-      createdAt: serverTimestamp(),
-    };
-
     try {
+      const exists = await checkNikExists(nik);
+      if (exists) {
+        setLoading(false);
+        return Swal.fire('Sudah Terdaftar', 'Ananda dengan NIK ini sudah terdaftar di sistem.', 'error');
+      }
+
+      const dataPendaftaran = {
+        // --- I. IDENTITAS SISWA ---
+        namaLengkap: formData.get("nama_lengkap"),
+        nik: nik,
+        nisn: formData.get("nisn") || "-",
+        jenisKelamin: formData.get("jenis_kelamin"),
+        tempatLahir: formData.get("tempat_lahir"),
+        tanggalLahir: formData.get("tanggal_lahir"),
+        agama: formData.get("agama") || "Islam",
+        anakKe: formData.get("anak_ke"),
+        jumlahSaudara: formData.get("jumlah_saudara"),
+        citaCita: formData.get("cita_cita") || "-",
+        hobi: formData.get("hobi") || "-",
+
+        // --- II. ALAMAT ---
+        alamatJalan: formData.get("alamat_jalan"),
+        rt: formData.get("rt"),
+        rw: formData.get("rw"),
+        desaKelurahan: formData.get("desa"),
+        kecamatan: formData.get("kecamatan"),
+        kabupatenKota: formData.get("kabupaten") || "Gunungkidul",
+        kodePos: formData.get("kode_pos") || "-",
+
+        // --- III. DATA AYAH ---
+        namaAyah: formData.get("nama_ayah"),
+        nikAyah: formData.get("nik_ayah"),
+        pendidikanAyah: formData.get("pendidikan_ayah"),
+        pekerjaanAyah: formData.get("pekerjaan_ayah"),
+        penghasilanAyah: formData.get("penghasilan_ayah"),
+        noWaAyah: formData.get("no_wa_ayah"), // TAMBAHAN
+
+        // --- IV. DATA IBU ---
+        namaIbu: formData.get("nama_ibu"),
+        nikIbu: formData.get("nik_ibu"),
+        pendidikanIbu: formData.get("pendidikan_ibu"),
+        pekerjaanIbu: formData.get("pekerjaan_ibu"),
+        penghasilanIbu: formData.get("penghasilan_ibu"),
+        noWaIbu: formData.get("no_wa_ibu"), // TAMBAHAN
+
+        // --- V. DATA WALI ---
+        namaWali: formData.get("nama_wali") || "-",
+        nikWali: formData.get("nik_wali") || "-",
+        hubunganWali: formData.get("hubungan_wali") || "-",
+        pendidikanWali: formData.get("pendidikan_wali") || "-", // TAMBAHAN
+        pekerjaanWali: formData.get("pekerjaan_wali") || "-",
+        penghasilanWali: formData.get("penghasilan_wali") || "-",
+        noWaWali: formData.get("no_wa_wali") || "-", // TAMBAHAN
+
+        // --- KONTAK UTAMA (Untuk Notifikasi Sistem) ---
+        noWa: formData.get("no_wa_ayah") || formData.get("no_wa_ibu"), 
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      };
+
       await addDoc(collection(db, "ppdb_registrations"), dataPendaftaran);
       
       await Swal.fire({
         icon: 'success',
         title: 'Pendaftaran Berhasil!',
-        text: 'Data ananda telah tersimpan. Silakan konfirmasi ke WhatsApp Admin.',
+        text: 'Data ananda telah tersimpan.',
         confirmButtonColor: '#1a5d1a'
       });
 
       const pesanWA = `Halo Admin PPDB SDM Wonosari,%0ASaya mendaftarkan anak saya:%0A*Nama:* ${dataPendaftaran.namaLengkap}%0A*NIK:* ${dataPendaftaran.nik}%0A%0AMohon info selanjutnya.`;
-      window.open(`https://wa.me/628123456789?text=${pesanWA}`, '_blank');
+      window.open(`https://wa.me/6285226443646?text=${pesanWA}`, '_blank');
 
       e.target.reset();
       router.push('/');
@@ -94,29 +172,6 @@ export default function PPDB() {
 
   if (loadingStatus) return <div style={styles.centerBox}>Memeriksa Status Pendaftaran...</div>;
 
-  // --- TAMPILAN PENDAFTARAN DITUTUP (LEBIH RAMAH) ---
-  if (!isRegistrationOpen) {
-    return (
-      <div style={styles.pageBg}>
-        <div style={styles.container}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={styles.closedCard}>
-            <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🏫</div>
-            <h1 style={styles.closedTitle}>Pendaftaran Belum Dibuka</h1>
-            <p style={styles.closedText}>
-              Terima kasih atas ketertarikan Ayah & Bunda di <b>SD Muhammadiyah Wonosari</b>. 
-              Saat ini pendaftaran sedang tidak aktif atau kuota periode ini telah terpenuhi.
-            </p>
-            <div style={styles.closedActions}>
-              <button onClick={() => router.push('/')} style={styles.btnSecondary}>Kembali ke Beranda</button>
-              <a href="https://wa.me/6285226443646" target="_blank" style={styles.btnWa}>Tanya Admin via WA</a>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  // --- TAMPILAN FORMULIR ---
   return (
     <div style={styles.pageBg}>
       <div style={styles.container}>
@@ -153,47 +208,86 @@ export default function PPDB() {
 
             <div style={styles.divider} />
 
-            <h2 style={styles.sectionTitle}>II. Data Alamat Domisili</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={styles.inputGroup}>
+            <h2 style={styles.sectionTitle}>II. Alamat Domisili</h2>
+            <div style={styles.inputGroup}>
                 <label style={styles.label}>Dusun / Nama Jalan / No. Rumah</label>
                 <input name="alamat_jalan" style={styles.input} required />
-              </div>
-              <div style={styles.grid}>
+            </div>
+            <div style={{...styles.grid, marginTop:'15px'}}>
                 <div style={styles.inputGroup}><label style={styles.label}>RT</label><input name="rt" style={styles.input} required /></div>
                 <div style={styles.inputGroup}><label style={styles.label}>RW</label><input name="rw" style={styles.input} required /></div>
                 <div style={styles.inputGroup}><label style={styles.label}>Desa/Kelurahan</label><input name="desa" style={styles.input} required /></div>
                 <div style={styles.inputGroup}><label style={styles.label}>Kecamatan</label><input name="kecamatan" style={styles.input} required /></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Kabupaten</label><input name="kabupaten" style={styles.input} defaultValue="Gunungkidul" required /></div>
                 <div style={styles.inputGroup}><label style={styles.label}>Kode Pos</label><input name="kode_pos" style={styles.input} required /></div>
+            </div>
+
+            <div style={styles.divider} />
+
+            <h2 style={styles.sectionTitle}>III. Data Ayah Kandung</h2>
+            <div style={styles.grid}>
+              <div style={styles.inputGroup}><label style={styles.label}>Nama Ayah</label><input name="nama_ayah" style={styles.input} required /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>NIK Ayah</label><input name="nik_ayah" style={styles.input} required /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>Pendidikan</label><input name="pendidikan_ayah" style={styles.input} /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>Pekerjaan</label><input name="pekerjaan_ayah" style={styles.input} /></div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Penghasilan Ayah</label>
+                <select name="penghasilan_ayah" style={styles.input}>
+                  <option value="Tidak Berpenghasilan">Tidak Berpenghasilan</option>
+                  <option value="Di bawah 1 Juta">Di bawah 1 Juta</option>
+                  <option value="1 - 3 Juta">1 - 3 Juta</option>
+                  <option value="Di atas 3 Juta">Di atas 3 Juta</option>
+                </select>
+              </div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>WhatsApp Ayah</label>
+                <input name="no_wa_ayah" style={{ ...styles.input, borderLeft: '5px solid #1a5d1a' }} placeholder="08xxxx" required />
               </div>
             </div>
 
             <div style={styles.divider} />
 
-            <h2 style={styles.sectionTitle}>III. Data Orang Tua / Wali</h2>
+            <h2 style={styles.sectionTitle}>IV. Data Ibu Kandung</h2>
             <div style={styles.grid}>
-              <div style={styles.inputGroup}><label style={styles.label}>Nama Ayah</label><input name="nama_ayah" style={styles.input} required /></div>
-              <div style={styles.inputGroup}><label style={styles.label}>NIK Ayah</label><input name="nik_ayah" style={styles.input} required /></div>
-              <div style={styles.inputGroup}><label style={styles.label}>Pendidikan Ayah</label><input name="pendidikan_ayah" style={styles.input} /></div>
-              <div style={styles.inputGroup}><label style={styles.label}>Pekerjaan Ayah</label><input name="pekerjaan_ayah" style={styles.input} /></div>
-              
               <div style={styles.inputGroup}><label style={styles.label}>Nama Ibu</label><input name="nama_ibu" style={styles.input} required /></div>
               <div style={styles.inputGroup}><label style={styles.label}>NIK Ibu</label><input name="nik_ibu" style={styles.input} required /></div>
-              <div style={styles.inputGroup}><label style={styles.label}>Pendidikan Ibu</label><input name="pendidikan_ibu" style={styles.input} /></div>
-              <div style={styles.inputGroup}><label style={styles.label}>Pekerjaan Ibu</label><input name="pekerjaan_ibu" style={styles.input} /></div>
-
+              <div style={styles.inputGroup}><label style={styles.label}>Pendidikan</label><input name="pendidikan_ibu" style={styles.input} /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>Pekerjaan</label><input name="pekerjaan_ibu" style={styles.input} /></div>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Penghasilan Gabungan</label>
-                <select name="penghasilan" style={styles.input}>
-                  <option value="Di bawah 2 Juta">Di bawah 2 Juta</option>
-                  <option value="2 - 5 Juta">2 - 5 Juta</option>
-                  <option value="Di atas 5 Juta">Di atas 5 Juta</option>
+                <label style={styles.label}>Penghasilan Ibu</label>
+                <select name="penghasilan_ibu" style={styles.input}>
+                  <option value="Tidak Berpenghasilan">Tidak Berpenghasilan</option>
+                  <option value="Di bawah 1 Juta">Di bawah 1 Juta</option>
+                  <option value="1 - 3 Juta">1 - 3 Juta</option>
+                  <option value="Di atas 3 Juta">Di atas 3 Juta</option>
                 </select>
               </div>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>WhatsApp Wali (Wajib Aktif)</label>
-                <input name="no_wa" style={{ ...styles.input, borderLeft: '5px solid #1a5d1a' }} placeholder="08xxxx" required />
+                <label style={styles.label}>WhatsApp Ibu</label>
+                <input name="no_wa_ibu" style={{ ...styles.input, borderLeft: '5px solid #d14d72' }} placeholder="08xxxx" required />
+              </div>
+            </div>
+
+            <div style={styles.divider} />
+
+            <h2 style={styles.sectionTitle}>V. Data Wali (Opsional)</h2>
+            <div style={styles.grid}>
+              <div style={styles.inputGroup}><label style={styles.label}>Nama Wali</label><input name="nama_wali" style={styles.input} /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>NIK Wali</label><input name="nik_wali" style={styles.input} /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>Hubungan Wali</label><input name="hubungan_wali" style={styles.input} placeholder="Kakek/Paman/Lainnya" /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>Pendidikan Wali</label><input name="pendidikan_wali" style={styles.input} /></div>
+              <div style={styles.inputGroup}><label style={styles.label}>Pekerjaan Wali</label><input name="pekerjaan_wali" style={styles.input} /></div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Penghasilan Wali</label>
+                <select name="penghasilan_wali" style={styles.input}>
+                  <option value="-">-</option>
+                  <option value="Di bawah 1 Juta">Di bawah 1 Juta</option>
+                  <option value="1 - 3 Juta">1 - 3 Juta</option>
+                  <option value="Di atas 3 Juta">Di atas 3 Juta</option>
+                </select>
+              </div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>WhatsApp Wali</label>
+                <input name="no_wa_wali" style={{ ...styles.input, borderLeft: '5px solid #215280' }} placeholder="08xxxx" />
               </div>
             </div>
 
@@ -207,7 +301,6 @@ export default function PPDB() {
   );
 }
 
-// --- STYLES ---
 const styles = {
   pageBg: { backgroundColor: '#f9fafb', minHeight: '100vh', padding: '100px 20px 40px 20px', fontFamily: 'Inter, sans-serif' },
   container: { maxWidth: '900px', margin: '0px auto' },
@@ -219,16 +312,81 @@ const styles = {
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '0.8rem', fontWeight: '600', color: '#374151' },
-  input: { padding: '12px', borderRadius: '10px', borderTopWidth:'1px', borderRightWidth:'1px', borderBottomWidth:'1px', borderLeftWidth:'1px', borderStyle:'solid', borderColor: '#d1d5db', fontSize: '0.95rem', outline: 'none' },
+  input: { padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', fontSize: '0.95rem', outline: 'none' },
   divider: { height: '1px', backgroundColor: '#f3f4f6', margin: '40px 0' },
   btnSubmit: { width: '100%', padding: '18px', background: '#1a5d1a', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '1rem', cursor: 'pointer', marginTop: '30px' },
   centerBox: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: '#1a5d1a' },
-  
-  // Gaya Kartu Tutup
-  closedCard: { background: 'white', padding: '60px 40px', borderRadius: '30px', boxShadow: '0 20px 25px rgba(0,0,0,0.05)', textAlign: 'center' },
-  closedTitle: { color: '#1a5d1a', fontSize: '2rem', fontWeight: '900', marginBottom: '15px' },
-  closedText: { color: '#64748b', fontSize: '1.1rem', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 30px' },
-  closedActions: { display: 'flex', gap: '15px', justifyContent: 'center' },
-  btnWa: { background: '#25d366', color: 'white', padding: '12px 25px', borderRadius: '12px', textDecoration: 'none', fontWeight: '700' },
-  btnSecondary: { background: '#f1f5f9', color: '#475569', padding: '12px 25px', borderRadius: '12px', border: 'none', fontWeight: '700', cursor: 'pointer' },
+  // --- TAMBAHAN STYLE UNTUK PENDAFTARAN DITUTUP ---
+  closedCard: {
+    background: 'white',
+    padding: '60px 40px',
+    borderRadius: '35px',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.05)',
+    textAlign: 'center',
+    maxWidth: '600px',
+    margin: '0 auto',
+    border: '1px solid #f1f5f9'
+  },
+  closedIconBox: {
+    marginBottom: '30px',
+    display: 'inline-block'
+  },
+  closedTitle: {
+    color: '#1e293b',
+    fontSize: '2rem',
+    fontWeight: '900',
+    marginBottom: '15px'
+  },
+  closedText: {
+    color: '#64748b',
+    fontSize: '1.1rem',
+    lineHeight: '1.6',
+    marginBottom: '25px'
+  },
+  closedNotice: {
+    background: '#f8fafc',
+    padding: '20px',
+    borderRadius: '20px',
+    color: '#475569',
+    fontSize: '0.95rem',
+    lineHeight: '1.6',
+    marginBottom: '40px',
+    border: '1px dashed #cbd5e1'
+  },
+  closedActions: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    marginBottom: '30px'
+  },
+  btnHome: {
+    background: '#1a5d1a',
+    color: 'white',
+    padding: '15px',
+    borderRadius: '15px',
+    textDecoration: 'none',
+    fontWeight: '800',
+    fontSize: '1rem',
+    transition: '0.3s',
+  },
+  btnCheck: {
+    background: '#f1f5f9',
+    color: '#1e293b',
+    padding: '15px',
+    borderRadius: '15px',
+    textDecoration: 'none',
+    fontWeight: '800',
+    fontSize: '1rem',
+    transition: '0.3s',
+  },
+  closedFooter: {
+    fontSize: '0.9rem',
+    color: '#94a3b8'
+  },
+  waLink: {
+    color: '#1a5d1a',
+    fontWeight: 'bold',
+    textDecoration: 'none',
+    borderBottom: '2px solid #dcfce7'
+  }
 };
