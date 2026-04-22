@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import Image from 'next/image';
+import Image from 'next/image'; // Pastikan import Image ada
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -24,34 +24,28 @@ export default function CekStatus() {
     setResult(null);
 
     try {
-      // SINKRONISASI: Mencari di koleksi ppdb_registrations berdasarkan NIK
       const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs[0].data();
-        
-        // Format Tanggal
         let dateStr = '-';
         if(data.createdAt) {
             dateStr = new Date(data.createdAt.seconds * 1000).toLocaleDateString('id-ID', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
         }
-        
         setResult({ ...data, dateStr });
       } else {
-        setError('Data pendaftaran tidak ditemukan. Pastikan NIK yang dimasukkan benar.');
+        setError('Data pendaftaran tidak ditemukan. Pastikan NIK sudah benar.');
       }
     } catch (err) {
-      console.error(err);
       setError('Terjadi kesalahan koneksi. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper Warna Status (Sinkron dengan Admin)
   const getStatusBadge = (status) => {
       switch(status) {
         case 'terverifikasi':
@@ -67,7 +61,7 @@ export default function CekStatus() {
     <div style={s.pageBg}>
       <div style={s.container}>
         
-        {/* PANEL PENCARIAN */}
+        {/* PANEL PENCARIAN DENGAN LOGO ASLI */}
         <AnimatePresence>
           {!result && (
             <motion.div 
@@ -76,7 +70,13 @@ export default function CekStatus() {
               style={s.searchBox}
             >
               <div style={s.logoWrapper}>
-                 <div style={s.logoCircle}>M</div>
+                 <Image 
+                    src="/images/logo sdm woonsa.jpg" 
+                    alt="Logo SDM Wonosari" 
+                    width={80} 
+                    height={80} 
+                    priority
+                 />
               </div>
               <h2 style={s.title}>Cek Status PPDB</h2>
               <p style={s.subtitle}>Masukkan 16 digit NIK Calon Siswa</p>
@@ -107,7 +107,7 @@ export default function CekStatus() {
           )}
         </AnimatePresence>
 
-        {/* PANEL HASIL */}
+        {/* PANEL HASIL DENGAN LOGO ASLI */}
         {result && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }} 
@@ -115,7 +115,14 @@ export default function CekStatus() {
             style={s.resultCard}
           >
             <div style={s.cardHeader}>
-                <div style={s.headerLogo}>M</div>
+                <div style={s.headerLogoBox}>
+                    <Image 
+                        src="/images/logo sdm woonsa.jpg" 
+                        alt="Logo" 
+                        width={50} 
+                        height={50} 
+                    />
+                </div>
                 <div>
                     <h2 style={s.headerTitle}>Bukti Pendaftaran</h2>
                     <p style={s.headerSub}>SD Muhammadiyah Wonosari</p>
@@ -136,7 +143,7 @@ export default function CekStatus() {
                 </div>
 
                 <div style={s.noteBox}>
-                    *Harap simpan bukti ini (Screenshot/Cetak) untuk ditunjukkan saat daftar ulang atau verifikasi berkas di sekolah.
+                    *Harap simpan bukti ini (Screenshot/Cetak) sebagai bukti pendaftaran resmi.
                 </div>
             </div>
 
@@ -153,7 +160,7 @@ export default function CekStatus() {
         .badge-ok { background: #f0fdf4; color: #15803d; border: 1px solid #4ade80; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 0.9rem; display: inline-block; }
         .badge-no { background: #fef2f2; color: #b91c1c; border: 1px solid #f87171; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 0.9rem; display: inline-block; }
         @media print {
-          .btn-reset, .link-back, .btn-primary { display: none !important; }
+          .btnReset, .linkBack, .btnPrimary, .cardFooter { display: none !important; }
           body { background: white !important; padding: 0 !important; }
         }
       `}</style>
@@ -173,7 +180,6 @@ const s = {
   container: { maxWidth: '600px', margin: '0 auto' },
   searchBox: { background: 'white', padding: '50px 40px', borderRadius: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', textAlign: 'center' },
   logoWrapper: { marginBottom: '25px', display: 'flex', justifyContent: 'center' },
-  logoCircle: { background: '#1a5d1a', width: '60px', height: '60px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '900', fontSize: '1.5rem' },
   title: { fontSize: '1.8rem', fontWeight: '900', color: '#1e293b', marginBottom: '10px' },
   subtitle: { color: '#64748b', marginBottom: '35px' },
   inputWrapper: { marginBottom: '20px' },
@@ -184,7 +190,7 @@ const s = {
 
   resultCard: { background: 'white', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.1)' },
   cardHeader: { background: '#1a5d1a', padding: '30px', color: 'white', display: 'flex', alignItems: 'center', gap: '20px' },
-  headerLogo: { background: 'white', width: '50px', height: '50px', borderRadius: '12px', color: '#1a5d1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' },
+  headerLogoBox: { background: 'white', padding: '5px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { margin: 0, fontSize: '1.5rem', fontWeight: '800' },
   headerSub: { margin: 0, opacity: 0.8, fontSize: '0.85rem' },
   cardBody: { padding: '40px' },
