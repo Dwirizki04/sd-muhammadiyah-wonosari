@@ -12,7 +12,7 @@ export default function Unggulan() {
     { name: "Baca Tulis Quran", category: "takhassus", image: "/images/TS2.jpg", icon: "fas fa-book-quran", desc: "Metode efektif baca tulis." },
     { name: "Sholat Dhuha", category: "agama", image: "/images/Sholat.jpg", icon: "fas fa-mosque", desc: "Pembiasaan sholat sunnah." },
     { name: "Hafalan Doa", category: "agama", image: "/images/hafalan.jpg", icon: "fas fa-pray", desc: "Doa harian dan hadist." },
-    { name: "Life Skill Memasak", category: "keterampilan", image: "/images/LS4.jpg", icon: "fas fa-utensils", desc: "Dasar tata boga." },
+    { name: "Life Skill Memasak", category: "keterampilan", image: "/images/TB.jpg", icon: "fas fa-utensils", desc: "Dasar tata boga." },
     { name: "Berkebun", category: "keterampilan", image: "/images/LS2.jpg", icon: "fas fa-seedling", desc: "Bercocok tanam mandiri." },
     { name: "Outing Class", category: "experiential", image: "/images/oc1.jpg", icon: "fas fa-bus", desc: "Belajar di luar kelas." },
   ];
