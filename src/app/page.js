@@ -10,7 +10,13 @@ import Clarity from '@microsoft/clarity';
 
 const projectId = 'sdmmuri'; // Ganti dengan ID proyek Anda di Clarity
 Clarity.init('xd151s96vo');
-Clarity.identify ( " custom-id" , "custom-session-id" , "custom- page -id" , "friendly-name" ) ;
+Clarity.identify('custom-id', 'custom-session-id', 'custom-page-id', 'friendly-name');
+
+(function(c, l, a, r, i, t, y) {
+    c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+    t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+})(window, document, 'clarity', 'script', 'xd151s96vo');
 
 // --- 1. KOMPONEN ANIMASI ANGKA (HERO STATS) ---
 function AnimatedCounter({ value }) {
