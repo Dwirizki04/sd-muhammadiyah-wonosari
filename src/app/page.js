@@ -6,6 +6,11 @@ import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from 'f
 import { useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import Clarity from '@microsoft/clarity';
+
+const projectId = 'sdmmuri'; // Ganti dengan ID proyek Anda di Clarity
+Clarity.init('xd151s96vo');
+Clarity.identify ( " custom-id" , "custom-session-id" , "custom- page -id" , "friendly-name" ) ;
 
 // --- 1. KOMPONEN ANIMASI ANGKA (HERO STATS) ---
 function AnimatedCounter({ value }) {
