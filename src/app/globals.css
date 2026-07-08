@@ -244,8 +244,16 @@ img { max-width: 100%; display: block; }
 
 .program-content, .news-content { padding: 25px; display: flex; flex-direction: column; flex-grow: 1; }
 .program-content h3, .news-content h3 { font-size: 1.25rem; margin-bottom: 10px; color: var(--dark-color); }
-.program-content p, .news-content p { color: var(--text-grey); font-size: 0.95rem; margin-bottom: 15px; flex-grow: 1; }
+.program-content p { color: var(--text-grey); font-size: 0.95rem; margin-bottom: 15px; flex-grow: 1; }
 .program-link { color: var(--primary-green); font-weight: 700; margin-top: auto; display: inline-block; }
+.news-content p {
+    text-align: justify;       /* Mengatur teks menjadi Rata Kanan & Kiri */
+    white-space: pre-line;     /* Mengenali enter/baris baru dari database */
+    word-break: break-word;    /* Mencegah kata panjang merusak tampilan */
+    line-height: 1.7;          /* Memberi jarak antar baris agar nyaman dibaca */
+    color: #475569;            /* Warna teks berita */
+    margin-top: 10px;
+}
 
 .benefit-icon {
     width: 70px; height: 70px; background: var(--light-green); color: var(--primary-green);
