@@ -108,8 +108,11 @@ export default function AdminNews() {
             </div>
 
             <textarea 
-              style={textareaStyle} placeholder="Ringkasan berita..." 
-              value={form.excerpt} onChange={(e) => setForm({...form, excerpt: e.target.value})} required 
+              style={textareaStyle} 
+              placeholder="Tulis isi atau ringkasan berita di sini. Tekan Enter untuk paragraf baru..." 
+              value={form.excerpt} 
+              onChange={(e) => setForm({...form, excerpt: e.target.value})} 
+              required 
             />
 
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -129,7 +132,7 @@ export default function AdminNews() {
               {news.map((item) => (
                 <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={newsItemStyle}>
                   <div style={thumbContainer}>
-                    <img src={item.images?.[0]} style={imgMain} />
+                    <img src={item.images?.[0]} style={imgMain} alt="thumb" />
                     {item.images?.length > 1 && (
                       <div style={imgBadge}>+{item.images.length - 1}</div>
                     )}
@@ -161,7 +164,18 @@ const cardStyle = { background: 'white', padding: '30px', borderRadius: '24px', 
 const sectionTitle = { fontSize: '1.1rem', marginBottom: '20px', color: '#1e293b' };
 const formStyle = { display: 'flex', flexDirection: 'column', gap: '20px' };
 const inputStyle = { padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', background: '#f8fafc' };
-const textareaStyle = { ...inputStyle, minHeight: '130px', resize: 'none' };
+
+// STYLING TEXTAREA (Diperbarui untuk Paragraf Baru & Rata Kanan Kiri)
+const textareaStyle = { 
+  ...inputStyle, 
+  minHeight: '200px', 
+  resize: 'vertical',
+  textAlign: 'justify',
+  whiteSpace: 'pre-wrap',
+  lineHeight: '1.6',
+  fontFamily: 'inherit'
+};
+
 const uploadBox = { padding: '20px', background: '#f1f5f9', borderRadius: '16px', border: '2px dashed #cbd5e1', textAlign: 'center' };
 const labelStyle = { fontSize: '0.8rem', fontWeight: 'bold', color: '#64748b', marginBottom: '10px', display: 'block' };
 const previewGrid = { display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '15px' };

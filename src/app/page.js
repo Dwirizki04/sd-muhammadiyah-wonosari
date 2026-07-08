@@ -167,7 +167,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BERITA TERKINI - VERSI SLIDER */}
+      {/* BERITA TERKINI - VERSI SLIDER & LINK ARTIKEL */}
       <section className="news-section">
         <div className="container">
           <motion.h2 
@@ -191,13 +191,30 @@ export default function Home() {
                 variants={fadeInUp} 
                 transition={{ delay: index * 0.1 }}
               >
-                {/* Komponen Slider untuk Gambar Berita */}
+                {/* Komponen Slider Gambar */}
                 <NewsSlider images={item.images} title={item.title} />
 
                 <div className="news-content">
                   <div className="news-date">{item.date}</div>
                   <h3>{item.title}</h3>
-                  <p>{item.excerpt}</p>
+                  
+                  {/* Hanya Menampilkan Ringkasan Singkat (Dipotong max 120 Karakter jika panjang) */}
+                  <p style={{ 
+                    display: '-webkit-box', 
+                    WebkitLineClamp: 3, 
+                    WebkitBoxOrient: 'vertical', 
+                    overflow: 'hidden',
+                    textAlign: 'justify',
+                    color: '#64748b',
+                    marginBottom: '15px'
+                  }}>
+                    {item.excerpt}
+                  </p>
+
+                  {/* LINK MENUJU HALAMAN ARTIKEL KHUSUS */}
+                  <Link href={`/berita/${item.id}`} style={btnReadMore}>
+                    Baca Selengkapnya →
+                  </Link>
                 </div>
               </motion.div>
             )) : !loading && (
@@ -253,4 +270,12 @@ const dotStyle = {
   height: '8px',
   borderRadius: '4px',
   transition: 'all 0.3s ease'
+};
+const btnReadMore = {
+  display: 'inline-block',
+  color: '#1a5d1a',
+  fontWeight: '800',
+  fontSize: '0.9rem',
+  textDecoration: 'none',
+  marginTop: '10px'
 };
