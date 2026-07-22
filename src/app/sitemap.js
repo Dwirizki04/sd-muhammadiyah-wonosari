@@ -2,7 +2,7 @@
 
 export default function sitemap() {
   // Ganti URL ini jika nanti Mas Dwi sudah beli domain .sch.id
-  const baseUrl = 'https://sdmuri.netlify.app'; 
+  const baseUrl = 'https://sdmuhwonosari.sch.id/'; 
 
   return [
     {

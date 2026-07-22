@@ -7,6 +7,6 @@ export default function robots() {
       allow: '/',         // Boleh masuk ke semua halaman...
       disallow: '/admin/', // ...KECUALI halaman Admin (Rahasia!)
     },
-    sitemap: 'https://sdmuri.netlify.app/sitemap.xml', // Petunjuk arah peta
+    sitemap: 'https://sdmuhwonosari.sch.id//sitemap.xml', // Petunjuk arah peta
   }
 }

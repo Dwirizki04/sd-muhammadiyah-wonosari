@@ -16,6 +16,7 @@ export default function Ekstrakurikuler() {
     { title: "Renang", icon: "fas fa-person-swimming", desc: "Olahraga air untuk kesehatan dan kebugaran." },
     { title: "Literasi Membaca", icon: "fas fa-book", desc: "Meningkatkan minat baca dan wawasan siswa." },
     { title: "Literasi Numerasi", icon: "fas fa-calculator", desc: "Mengasah kemampuan logika dan berhitung." },
+    { title: "Badminton", icon: "fas fa-table-tennis", desc: "Melatih kelincahan dan strategi bermain." },
   ];
 
   const fadeInUp = {

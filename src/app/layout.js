@@ -19,7 +19,7 @@ export const metadata = {
   description: 'SD Muhammadiyah Wonosari berkomitmen tidak hanya berfokus pada pendidikan akademik, melainkan juga mengedepankan pendidikan agama dan pembentukan karakter Islami.',
   keywords: ["SD Muhammadiyah Wonosari", "SDM Wonosari", "SDMuri", "Sekolah Dasar Gunungkidul", "PPDB SD Wonosari"],
   authors: [{ name: 'SD Muhammadiyah Wonosari' }],
-  metadataBase: new URL('https://sdmuri.netlify.app/'),
+  metadataBase: new URL('https://sdmuhwonosari.sch.id/'),
   alternates: {
     canonical: '/',
   },
