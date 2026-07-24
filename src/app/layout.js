@@ -21,7 +21,7 @@ export const metadata = {
   authors: [{ name: 'SD Muhammadiyah Wonosari' }],
   metadataBase: new URL('https://sdmuhwonosari.sch.id/'),
   alternates: {
-    canonical: '/',
+    canonical: 'https://sdmuhwonosari.sch.id/',
   },
   icons: {
     icon: '/favicon.ico',
