@@ -8,16 +8,6 @@ import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import Clarity from '@microsoft/clarity';
 
-const projectId = 'sdmmuri'; // Ganti dengan ID proyek Anda di Clarity
-Clarity.init('xd151s96vo');
-Clarity.identify('custom-id', 'custom-session-id', 'custom-page-id', 'friendly-name');
-
-(function(c, l, a, r, i, t, y) {
-    c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
-    t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
-    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
-})(window, document, 'clarity', 'script', 'xd151s96vo');
-
 // --- 1. KOMPONEN ANIMASI ANGKA (HERO STATS) ---
 function AnimatedCounter({ value }) {
   const ref = useRef(null);
@@ -93,7 +83,13 @@ function NewsSlider({ images, title }) {
 export default function Home() {
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
+  // Inisialisasi Microsoft Clarity (hanya di client, sekali saat mount)
+  useEffect(() => {
+    Clarity.init('xd151s96vo');
+    Clarity.identify('custom-id', 'custom-session-id', 'custom-page-id', 'friendly-name');
+  }, []);
+
   // Mengambil data berita secara real-time dari Firebase
   useEffect(() => {
     const qNews = query(collection(db, "news"), orderBy("createdAt", "desc"));
@@ -108,10 +104,10 @@ export default function Home() {
   const galleryData = [
     { image: '/images/TS1.jpg', title: 'Kelas Takhassus' },
     { image: '/images/Sholat.jpg', title: 'Sholat Berjamaah' },
-    { image: '/images/LS2.jpg', title: 'Praktek Memasak' },
+    { image: '/images/TB1.png', title: 'Praktek Memasak' },
     { image: '/images/oc1.jpg', title: 'Outing Class' },
     { image: '/images/Drumband DIY.jpg', title: 'Drumband' },
-    { image: '/images/LS3.jpg', title: 'Berkebun' },
+    { image: '/images/LS2.jpg', title: 'Berkebun' },
   ];
 
   const fadeInUp = { hidden: { opacity: 0, y: 60 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } };

@@ -103,35 +103,47 @@ export const updateThemeSettings = async (themeData) => {
 
 /**
  * --- Check Status PPDB for Public ---
+ * PENTING: Fungsi-fungsi di bawah ini SENGAJA tidak lagi query Firestore
+ * langsung dari client (`where("nik", "==", nik)`), karena itu membuat NIK
+ * bisa ditebak-tebak (enumerasi) langsung lewat Firebase client SDK dari
+ * DevTools browser, tanpa melalui form/UI sama sekali.
+ *
+ * Sekarang keduanya memanggil API Route server-side yang menerapkan
+ * rate-limiting per-IP. Pastikan endpoint berikut sudah dibuat:
+ *   - /api/cek-status      (detail lengkap, dipakai halaman cek status hasil PPDB)
+ *   - /api/check-nik       (hanya return boolean sudah terdaftar/belum, dipakai form pendaftaran)
  */
+
 export const checkPPDBStatus = async (nik) => {
-  try {
-    const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
-    const querySnapshot = await getDocs(q);
-    
-    if (!querySnapshot.empty) {
-      // Mengambil data pertama (karena NIK unik)
-      const docData = querySnapshot.docs[0];
-      return { id: docData.id, ...docData.data() };
-    }
-    return null;
-  } catch (error) {
-    console.error("Error checking status:", error);
-    throw error;
+  const res = await fetch('/api/cek-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nik }),
+  });
+  if (!res.ok) {
+    if (res.status === 404) return null;
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || 'Gagal memeriksa status.');
   }
+  return await res.json();
 };
 
 export const isNikAlreadyRegistered = async (nik) => {
-    const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
-    const sanp = await getDocs(q);
-    return !sanp.empty;
-  };
+  const res = await fetch('/api/check-nik', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nik }),
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || 'Gagal memeriksa NIK.');
+  }
+  const data = await res.json();
+  return data.exists;
+};
 
-export const checkNikExists = async (nik) => {
-  const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
-  const snap = await getDocs(q);
-  return !snap.empty;
-}
+// Alias, dipertahankan agar kode lama yang memanggil checkNikExists tidak rusak
+export const checkNikExists = isNikAlreadyRegistered;
 
 // ==========================================
 // 2. DONASI TAKJIL SERVICES (BISA DUA SEKALIGUS)
@@ -166,6 +178,23 @@ export const subscribeDonasiTakjilStatus = (callback) => {
 
 export const submitDonasiTakjil = async (data) => {
   try {
+    // --- VALIDASI INPUT (mencegah manipulasi via console browser) ---
+    const qtyNasi = Number(data.qtyNasi) || 0;
+    const qtyMinum = Number(data.qtyMinum) || 0;
+    const MAX_PORSI_PER_SUBMIT = 200; // batas wajar per pengajuan, sesuaikan jika perlu
+
+    const isValidQty = (n) => Number.isInteger(n) && n >= 0 && n <= MAX_PORSI_PER_SUBMIT;
+
+    if (!isValidQty(qtyNasi) || !isValidQty(qtyMinum)) {
+      return { success: false, error: 'Jumlah porsi tidak valid.' };
+    }
+    if (!data.studentName || typeof data.studentName !== 'string' || !data.studentName.trim()) {
+      return { success: false, error: 'Nama murid wajib diisi.' };
+    }
+    if (!data.studentClass || typeof data.studentClass !== 'string') {
+      return { success: false, error: 'Kelas wajib diisi.' };
+    }
+
     const statsRef = doc(db, 'settings', 'donasi_takjil_stats');
     
     // Gunakan setDoc dengan merge: true agar dokumen tercipta jika belum ada tanpa menghapus data
@@ -173,8 +202,6 @@ export const submitDonasiTakjil = async (data) => {
     
     const statsSnap = await getDoc(statsRef);
     const stats = statsSnap.data();
-    const qtyNasi = Number(data.qtyNasi) || 0;
-    const qtyMinum = Number(data.qtyMinum) || 0;
     
     const currentCollectedNasi = Number(stats.collectedNasi) || 0;
     const currentCollectedMinuman = Number(stats.collectedMinuman) || 0;

@@ -58,8 +58,8 @@ export default function Unggulan() {
           </div>
 
           <div className="programs-grid">
-            {filteredPrograms.map((program, index) => (
-              <div className="program-card" key={index}>
+            {filteredPrograms.map((program) => (
+              <div className="program-card" key={program.name}>
                 <div className="program-image">
                   <Image src={program.image} alt={program.name} width={400} height={250} style={{width:'100%', height:'100%', objectFit:'cover'}} />
                 </div>

@@ -12,7 +12,7 @@ export default function LogoutPage() {
       await signOut(auth);
       // Hapus data cadangan jika ada di localStorage
       localStorage.clear(); 
-      router.replace('/login');
+      router.replace('/admin');
     };
     performLogout();
   }, [router]);
