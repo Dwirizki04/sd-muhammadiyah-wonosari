@@ -80,6 +80,7 @@ SPMB (Sistem Penerimaan Murid Baru):
   halaman "cek-status" di website dan memasukkan NIK calon siswa dikolom cek status pendaftaran.
 - Chatbot TIDAK PERNAH meminta, memproses, atau mengecek NIK/data pribadi
   siapa pun secara langsung dalam percakapan.
+- SPMB akan dibuka pada hari Selasa, tanggal 27 Oktober 2024 pukul 08.00 WIB dan akan ditutup pada hari Selasa, tanggal 28 Oktober 2026 pukul 15.00 WIB. Pendaftaran dilakukan secara online melalui website resmi sekolah.
 
 Donasi:
 - Sedekah Takjil Ramadhan (donasi musiman saat bulan Ramadhan)
