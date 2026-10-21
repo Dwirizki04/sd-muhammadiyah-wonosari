@@ -91,7 +91,7 @@ async function uploadDokumen(file) {
           </div>
 
           <div style={styles.closedFooter}>
-            Butuh bantuan? <a href="https://wa.me/6285226443646" target="_blank" style={styles.waLink}>Hubungi Admin PPDB</a>
+            Butuh bantuan? <a href="https://wa.me/6285226443646" target="_blank" style={styles.waLink}>Hubungi Admin SPMB</a>
           </div>
         </motion.div>
       </div>
@@ -209,7 +209,7 @@ async function uploadDokumen(file) {
       if (!contentType.includes('application/json')) {
         // Server crash / error HTML page dikirim, bukan JSON -- kasih pesan
         // yang jelas daripada error parse JSON yang membingungkan user.
-        throw new Error('Server sedang bermasalah (bukan error dari data kamu). Coba lagi sebentar lagi, atau hubungi admin kalau terus terjadi.');
+        throw new Error('Server sedang bermasalah. Coba lagi sebentar lagi, atau hubungi admin kalau terus terjadi.');
       }
 
       const result = await res.json();
@@ -226,7 +226,7 @@ async function uploadDokumen(file) {
         confirmButtonColor: '#1a5d1a'
       });
 
-      const pesanWA = `Halo Admin PPDB SDM Wonosari,\nSaya mendaftarkan anak saya:\n*Nama:* ${dataPendaftaran.namaLengkap}\n*NIK:* ${dataPendaftaran.nik}\n\nMohon info selanjutnya.`;
+      const pesanWA = `Halo Admin SPMB SDM Wonosari,\nSaya mendaftarkan anak saya:\n*Nama:* ${dataPendaftaran.namaLengkap}\n*NIK:* ${dataPendaftaran.nik}\n\nMohon menunggu verifikasi selanjutnya selanjutnya.`;
       window.open(`https://wa.me/6285226443646?text=${encodeURIComponent(pesanWA)}`, '_blank');
 
       e.target.reset();
