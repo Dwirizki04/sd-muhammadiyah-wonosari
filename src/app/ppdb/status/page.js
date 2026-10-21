@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import Image from 'next/image'; // Pastikan import Image ada
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -24,21 +22,29 @@ export default function CekStatus() {
     setResult(null);
 
     try {
-      const q = query(collection(db, "ppdb_registrations"), where("nik", "==", nik));
-      const querySnapshot = await getDocs(q);
+      // Query sekarang lewat API route server-side, bukan langsung ke Firestore.
+      // NIK tidak lagi bisa ditebak-tebak langsung lewat Firebase client SDK,
+      // dan ada rate-limiting per-IP di server untuk mencegah brute-force/scraping.
+      const res = await fetch('/api/cek-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nik }),
+      });
 
-      if (!querySnapshot.empty) {
-        const data = querySnapshot.docs[0].data();
-        let dateStr = '-';
-        if(data.createdAt) {
-            dateStr = new Date(data.createdAt.seconds * 1000).toLocaleDateString('id-ID', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-            });
-        }
-        setResult({ ...data, dateStr });
-      } else {
-        setError('Data pendaftaran tidak ditemukan. Pastikan NIK sudah benar.');
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        setError('Server sedang bermasalah. Silakan coba lagi sebentar lagi.');
+        return;
       }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Terjadi kesalahan. Silakan coba lagi.');
+        return;
+      }
+
+      setResult(data);
     } catch (err) {
       setError('Terjadi kesalahan koneksi. Silakan coba lagi.');
     } finally {
@@ -61,7 +67,6 @@ export default function CekStatus() {
     <div style={s.pageBg}>
       <div style={s.container}>
         
-        {/* PANEL PENCARIAN DENGAN LOGO ASLI */}
         <AnimatePresence>
           {!result && (
             <motion.div 
@@ -78,7 +83,7 @@ export default function CekStatus() {
                     priority
                  />
               </div>
-              <h2 style={s.title}>Cek Status PPDB</h2>
+              <h2 style={s.title}>Cek Status SPMB</h2>
               <p style={s.subtitle}>Masukkan 16 digit NIK Calon Siswa</p>
 
               <form onSubmit={handleSearch}>
@@ -87,7 +92,7 @@ export default function CekStatus() {
                           type="text" 
                           maxLength="16"
                           value={nik}
-                          onChange={(e) => setNik(e.target.value)}
+                          onChange={(e) => setNik(e.target.value.replace(/\D/g, ''))}
                           placeholder="Contoh: 3403xxxxxxxxxxxx" 
                           required 
                           style={s.inputField}
@@ -107,12 +112,12 @@ export default function CekStatus() {
           )}
         </AnimatePresence>
 
-        {/* PANEL HASIL DENGAN LOGO ASLI */}
         {result && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }} 
             animate={{ opacity: 1, scale: 1 }} 
             style={s.resultCard}
+            className="print-area"
           >
             <div style={s.cardHeader}>
                 <div style={s.headerLogoBox}>
@@ -138,7 +143,10 @@ export default function CekStatus() {
                     <InfoRow label="Nama Lengkap" val={result.namaLengkap} />
                     <InfoRow label="NIK" val={result.nik} />
                     <InfoRow label="Jenis Kelamin" val={result.jenisKelamin} />
-                    <InfoRow label="Desa/Kelurahan" val={result.desaKelurahan} />
+                    <InfoRow label="Tempat, Tgl Lahir" val={`${result.tempatLahir}, ${result.tanggalLahir}`} />
+                    <InfoRow label="Alamat" val={result.alamatLengkap} />
+                    <InfoRow label="Nama Ayah" val={result.namaAyah} />
+                    <InfoRow label="Nama Ibu" val={result.namaIbu} />
                     <InfoRow label="Tanggal Daftar" val={result.dateStr} />
                 </div>
 
@@ -147,7 +155,7 @@ export default function CekStatus() {
                 </div>
             </div>
 
-            <div style={s.cardFooter}>
+            <div style={s.cardFooter} className="no-print">
                 <button onClick={() => window.print()} style={s.btnPrint}>🖨️ Cetak PDF</button>
                 <button onClick={() => setResult(null)} style={s.btnReset}>Cari NIK Lain</button>
             </div>
@@ -159,9 +167,38 @@ export default function CekStatus() {
         .badge-wait { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 0.9rem; display: inline-block; }
         .badge-ok { background: #f0fdf4; color: #15803d; border: 1px solid #4ade80; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 0.9rem; display: inline-block; }
         .badge-no { background: #fef2f2; color: #b91c1c; border: 1px solid #f87171; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 0.9rem; display: inline-block; }
+      `}</style>
+
+      {/* style jsx GLOBAL supaya bisa "menjangkau" navbar/footer situs yang
+          dirender di luar komponen ini -- style jsx biasa (scoped) tidak bisa
+          menyentuh elemen di luar komponen saat ini. */}
+      <style jsx global>{`
         @media print {
-          .btnReset, .linkBack, .btnPrimary, .cardFooter { display: none !important; }
-          body { background: white !important; padding: 0 !important; }
+          /* Sembunyikan SEMUA elemen halaman secara default saat print... */
+          body * {
+            visibility: hidden;
+          }
+          /* ...lalu tampilkan HANYA kartu bukti pendaftaran ini */
+          .print-area,
+          .print-area * {
+            visibility: visible;
+          }
+          .print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
         }
       `}</style>
     </div>

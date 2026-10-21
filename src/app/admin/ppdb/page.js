@@ -4,17 +4,62 @@ import {
   subscribePPDB, 
   updateStatusPPDB, 
   deletePPDBEntry, 
-  subscribePPDBStatus, 
-  updatePPDBStatus 
+  subscribePPDBConfig, 
+  updatePPDBStatus,
+  updatePPDBKuota,
+  syncPPDBCounter
 } from '@/lib/firebaseService';
 import Swal from 'sweetalert2';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// --- HELPER UMUR & URUTAN ---
+// Tanggal lahir tersimpan sebagai string "YYYY-MM-DD" (dari input type="date").
+const parseBirth = (str) => {
+  if (!str || str === '-') return null;
+  const t = new Date(str).getTime();
+  return Number.isNaN(t) ? null : t;
+};
+
+const hitungUmur = (str) => {
+  const t = parseBirth(str);
+  if (t === null) return '-';
+  const lahir = new Date(t);
+  const now = new Date();
+  let tahun = now.getFullYear() - lahir.getUTCFullYear();
+  let bulan = now.getMonth() - lahir.getUTCMonth();
+  if (now.getDate() < lahir.getUTCDate()) bulan -= 1;
+  if (bulan < 0) { tahun -= 1; bulan += 12; }
+  if (tahun < 0) return '-';
+  return `${tahun} th ${bulan} bln`;
+};
+
+// order: 'terbaru' | 'tertua' | 'termuda'
+// 'tertua'  = tanggal lahir paling awal di atas (umur terbesar -> terkecil)
+// 'termuda' = tanggal lahir paling akhir di atas (umur terkecil -> terbesar)
+const urutkanPendaftar = (list, order) => {
+  if (order === 'terbaru') return list; // sudah urut createdAt desc dari Firestore
+  const arah = order === 'tertua' ? 1 : -1;
+  return [...list].sort((a, b) => {
+    const ta = parseBirth(a.tanggalLahir);
+    const tb = parseBirth(b.tanggalLahir);
+    // Tanggal lahir kosong/tidak valid selalu di paling bawah
+    if (ta === null && tb === null) return 0;
+    if (ta === null) return 1;
+    if (tb === null) return -1;
+    if (ta !== tb) return (ta - tb) * arah;
+    // Tanggal lahir sama -> yang mendaftar lebih dulu di atas
+    return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+  });
+};
+
 export default function AdminPPDB() {
   const [ppdbData, setPpdbData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [kuota, setKuota] = useState(0);
+  const [totalPendaftar, setTotalPendaftar] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [sortOrder, setSortOrder] = useState("terbaru");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,9 +68,58 @@ export default function AdminPPDB() {
       setPpdbData(data);
       setLoading(false);
     });
-    const unsubStatus = subscribePPDBStatus(setIsOpen);
-    return () => { unsubData(); unsubStatus(); };
+    const unsubConfig = subscribePPDBConfig((config) => {
+      setIsOpen(config.isOpen);
+      setKuota(config.kuota);
+      setTotalPendaftar(config.totalPendaftar);
+    });
+    return () => { unsubData(); unsubConfig(); };
   }, []);
+
+  const handleDelete = async (item) => {
+    const result = await Swal.fire({
+      title: 'Hapus Pendaftaran?',
+      html: `Data <strong>${item.namaLengkap}</strong> (NIK: ${item.nik}) akan dihapus permanen dan tidak bisa dikembalikan.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Ya, Hapus Permanen',
+      cancelButtonText: 'Batal',
+    });
+    if (result.isConfirmed) {
+      await deletePPDBEntry(item.id);
+      Swal.fire({ title: 'Terhapus', icon: 'success', timer: 1200, showConfirmButton: false });
+    }
+  };
+
+  const handleSyncCounter = async () => {
+    const realCount = await syncPPDBCounter();
+    Swal.fire({
+      title: 'Counter Disinkronkan',
+      text: `Total pendaftar sekarang: ${realCount} (sesuai data asli).`,
+      icon: 'success',
+      timer: 1800,
+      showConfirmButton: false,
+    });
+  };
+
+  const handleSetKuota = async () => {
+    const { value: newKuota } = await Swal.fire({
+      title: 'Atur Kuota Pendaftaran',
+      html: `Total pendaftar saat ini: <strong>${totalPendaftar}</strong>`,
+      input: 'number',
+      inputValue: kuota,
+      inputLabel: 'Kuota maksimal (isi 0 untuk tanpa batas)',
+      showCancelButton: true,
+      confirmButtonColor: '#1a5d1a',
+      confirmButtonText: 'Simpan',
+      inputAttributes: { min: 0 },
+    });
+    if (newKuota !== undefined) {
+      await updatePPDBKuota(newKuota);
+      Swal.fire({ title: 'Kuota Diperbarui', icon: 'success', timer: 1200, showConfirmButton: false });
+    }
+  };
 
   const stats = {
     total: ppdbData.length,
@@ -39,12 +133,14 @@ export default function AdminPPDB() {
     return matchesSearch && matchesStatus;
   });
 
+  const sortedData = urutkanPendaftar(filteredData, sortOrder);
+
   // --- EKSPOR EXCEL RAPI ---
   const exportToExcel = () => {
     const separator = ";";
-    const headers = ["Nama", "NIK", "NISN", "JK", "TTL", "Alamat", "Desa", "Kecamatan", "WA Ayah", "WA Ibu", "Status"].join(separator);
-    const rows = ppdbData.map(d => [
-      `"${d.namaLengkap}"`, `"'${d.nik}"`, `"'${d.nisn}"`, `"${d.jenisKelamin}"`, `"${d.tempatLahir}, ${d.tanggalLahir}"`,
+    const headers = ["Nama", "NIK", "NISN", "JK", "TTL", "Umur", "Alamat", "Desa", "Kecamatan", "WA Ayah", "WA Ibu", "Status"].join(separator);
+    const rows = urutkanPendaftar(ppdbData, sortOrder).map(d => [
+      `"${d.namaLengkap}"`, `"'${d.nik}"`, `"'${d.nisn}"`, `"${d.jenisKelamin}"`, `"${d.tempatLahir}, ${d.tanggalLahir}"`, `"${hitungUmur(d.tanggalLahir)}"`,
       `"${d.alamatJalan}"`, `"${d.desaKelurahan}"`, `"${d.kecamatan}"`, `"'${d.noWaAyah}"`, `"'${d.noWaIbu}"`, `"${d.status}"`
     ].join(separator)).join("\n");
     const csvContent = "\ufeff" + headers + "\n" + rows;
@@ -77,6 +173,12 @@ export default function AdminPPDB() {
                 <div style={s.toggleCircle(isOpen)} />
               </button>
             </div>
+            <button onClick={handleSetKuota} style={s.btnKuota}>
+              🎯 Kuota: {kuota > 0 ? `${totalPendaftar}/${kuota}` : 'Tanpa Batas'}
+            </button>
+            <button onClick={handleSyncCounter} style={s.btnSync} title="Hitung ulang total pendaftar dari data asli">
+              🔄 Sinkronkan
+            </button>
             <button onClick={exportToExcel} style={s.btnExport}>📊 Ekspor Excel</button>
           </div>
         </header>
@@ -102,6 +204,11 @@ export default function AdminPPDB() {
                 <option value="pending">🟡 Pending</option>
                 <option value="terverifikasi">🟢 Terverifikasi</option>
               </select>
+              <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} style={s.filterSelect}>
+                <option value="terbaru">🕒 Urut: Pendaftar Terbaru</option>
+                <option value="tertua">🎂 Umur: Tertua → Termuda</option>
+                <option value="termuda">🎂 Umur: Termuda → Tertua</option>
+              </select>
             </div>
           </div>
 
@@ -118,11 +225,12 @@ export default function AdminPPDB() {
               </thead>
               <tbody>
                 <AnimatePresence mode="popLayout">
-                  {filteredData.map((item) => (
+                  {sortedData.map((item) => (
                     <motion.tr key={item.id} layout initial={{opacity:0}} animate={{opacity:1}} style={s.tr}>
                       <td style={s.td}>
                         <div style={s.studentName}>{item.namaLengkap}</div>
                         <div style={s.studentSub}>{item.jenisKelamin} • {item.desaKelurahan}</div>
+                        <div style={s.studentSub}>🎂 {hitungUmur(item.tanggalLahir)} • {item.tanggalLahir || '-'}</div>
                       </td>
                       <td style={s.td}>
                         <div style={s.nikBadge}>NIK: {item.nik}</div>
@@ -147,7 +255,7 @@ export default function AdminPPDB() {
                       </td>
                       <td style={s.tdAction}>
                         <button onClick={() => setSelectedStudent(item)} style={s.btnDetail}>👁️ Detail</button>
-                        <button onClick={() => deletePPDBEntry(item.id)} style={s.btnDel}>Hapus</button>
+                        <button onClick={() => handleDelete(item)} style={s.btnDel}>Hapus</button>
                       </td>
                     </motion.tr>
                   ))}
@@ -207,6 +315,7 @@ export default function AdminPPDB() {
                        <p style={s.mColTitle}>Data Ayah</p>
                        <DetailBox label="Nama Ayah" val={selectedStudent.namaAyah} />
                        <DetailBox label="NIK Ayah" val={selectedStudent.nikAyah} />
+                       <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahirAyah || '-'}, ${selectedStudent.tanggalLahirAyah || '-'}`} />
                        <DetailBox label="Pendidikan" val={selectedStudent.pendidikanAyah} />
                        <DetailBox label="Pekerjaan" val={selectedStudent.pekerjaanAyah} />
                        <DetailBox label="Penghasilan" val={selectedStudent.penghasilanAyah} />
@@ -216,6 +325,7 @@ export default function AdminPPDB() {
                        <p style={s.mColTitle}>Data Ibu</p>
                        <DetailBox label="Nama Ibu" val={selectedStudent.namaIbu} />
                        <DetailBox label="NIK Ibu" val={selectedStudent.nikIbu} />
+                       <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahirIbu || '-'}, ${selectedStudent.tanggalLahirIbu || '-'}`} />
                        <DetailBox label="Pendidikan" val={selectedStudent.pendidikanIbu} />
                        <DetailBox label="Pekerjaan" val={selectedStudent.pekerjaanIbu} />
                        <DetailBox label="Penghasilan" val={selectedStudent.penghasilanIbu} />
@@ -232,12 +342,34 @@ export default function AdminPPDB() {
                       <DetailBox label="Nama Wali" val={selectedStudent.namaWali} />
                       <DetailBox label="Hubungan" val={selectedStudent.hubunganWali} />
                       <DetailBox label="NIK Wali" val={selectedStudent.nikWali} />
+                      <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahirWali || '-'}, ${selectedStudent.tanggalLahirWali || '-'}`} />
                       <DetailBox label="Pendidikan" val={selectedStudent.pendidikanWali} />
                       <DetailBox label="Pekerjaan" val={selectedStudent.pekerjaanWali} />
                       <DetailBox label="Penghasilan" val={selectedStudent.penghasilanWali} />
                     </div>
                   </div>
                 )}
+
+                {/* V. DOKUMEN */}
+                <div style={s.mSection}>
+                  <h4 style={s.mSectionTitle}>V. Dokumen Pendukung</h4>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {selectedStudent.kkUrl ? (
+                      <a href={selectedStudent.kkUrl} target="_blank" rel="noopener noreferrer" style={s.docLink}>
+                        📄 Lihat Kartu Keluarga
+                      </a>
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Dokumen KK belum diunggah.</span>
+                    )}
+                    {selectedStudent.aktaUrl ? (
+                      <a href={selectedStudent.aktaUrl} target="_blank" rel="noopener noreferrer" style={s.docLink}>
+                        📄 Lihat Akta Kelahiran
+                      </a>
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Dokumen Akta belum diunggah.</span>
+                    )}
+                  </div>
+                </div>
               </div>
               <button onClick={() => setSelectedStudent(null)} style={s.btnModalClose}>Tutup Detail</button>
             </motion.div>
@@ -280,6 +412,9 @@ const s = {
   toggleBtn: (open) => ({ width: '40px', height: '22px', background: open ? '#22c55e' : '#cbd5e1', borderRadius: '50px', border: 'none', position: 'relative', cursor: 'pointer' }),
   toggleCircle: (open) => ({ width: '16px', height: '16px', background: 'white', borderRadius: '50%', position: 'absolute', top: '3px', left: open ? '21px' : '3px', transition: '0.3s' }),
   btnExport: { background: '#0f172a', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' },
+  btnKuota: { background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', padding: '10px 18px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' },
+  btnSync: { background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '10px 18px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' },
+  docLink: { display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '10px 16px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem', textDecoration: 'none' },
 
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' },
   card: { background: 'white', padding: '25px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },

@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // 1. DONASI TAKJIL
+    // ==========================================
+    match /donasi_takjil/{id} {
+      // Publik boleh membuat entri baru (submit donasi), tapi wajib sesuai skema:
+      // - amount harus angka positif dan wajar (<=200, samakan dengan MAX_PORSI_PER_SUBMIT di kode)
+      // - isVerified WAJIB false saat dibuat publik (admin/server yang menentukan true)
+      allow create: if request.resource.data.keys().hasAll(['studentName', 'studentClass', 'takjilType', 'amount'])
+                    && request.resource.data.amount is int
+                    && request.resource.data.amount > 0
+                    && request.resource.data.amount <= 200
+                    && request.resource.data.studentName is string
+                    && request.resource.data.studentName.size() > 0
+                    && request.resource.data.studentClass is string;
+      // Baca daftar donasi, update, delete hanya untuk admin yang login
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Statistik donasi takjil (counter yang ditampilkan di progress bar publik)
+    match /settings/donasi_takjil_stats {
+      allow read: if true; // publik perlu baca untuk progress bar & status buka/tutup
+      // PERBAIKAN KRITIS: sebelumnya "allow update: if true" membuat siapa pun
+      // bisa mengubah counter/isOpen tanpa login. Sekarang HANYA admin.
+      //
+      // CATATAN: karena ini berarti submitDonasiTakjil() di firebaseService.js
+      // (yang dipanggil dari halaman PUBLIK) tidak lagi bisa meng-update
+      // dokumen ini langsung dari client, alur donasi takjil PERLU dipindah
+      // ke API Route server-side (pola yang sama seperti /api/cek-status),
+      // supaya server (pakai Admin SDK, bypass rules) yang melakukan
+      // increment counter setelah validasi. Beri tahu saya kalau mau saya
+      // buatkan endpoint-nya.
+      allow write: if request.auth != null;
+    }
+
+    // ==========================================
+    // 2. BERITA (NEWS)
+    // ==========================================
+    match /news/{id} {
+      allow read: if true;               // Semua orang bisa baca berita
+      allow write: if request.auth != null; // Hanya Admin yang bisa buat/edit/hapus
+    }
+
+    // ==========================================
+    // 3. PPDB
+    // ==========================================
+    match /ppdb_registrations/{id} {
+      // Publik tetap tidak boleh baca langsung (harus lewat API Route +
+      // Admin SDK di /api/cek-status dan /api/check-nik). Tapi admin yang
+      // sudah login (dipakai subscribePPDB() di panel admin) tetap boleh.
+      allow read: if request.auth != null;
+
+      // Publik TIDAK LAGI boleh create langsung dari client. Sejak reCAPTCHA
+      // dipasang, satu-satunya jalur pendaftaran yang sah adalah lewat
+      // /api/ppdb-register (Admin SDK di server, verifikasi reCAPTCHA dulu
+      // sebelum menulis). Kalau create diizinkan di sini, reCAPTCHA di atas
+      // jadi percuma -- bot tetap bisa skip form dan langsung addDoc ke
+      // Firestore tanpa pernah lewat verifikasi.
+      allow create: if false;
+
+      allow update, delete: if request.auth != null; // Hanya Admin verifikasi/hapus
+    }
+
+    // ==========================================
+    // 4. SETTINGS (Config, Appearance, dll di luar donasi_takjil_stats)
+    // ==========================================
+    match /settings/{docId} {
+      // Tidak menimpa aturan spesifik /settings/donasi_takjil_stats di atas --
+      // Firestore mengevaluasi rule paling spesifik yang cocok untuk path
+      // tersebut, jadi blok khusus di atas yang dipakai untuk docId itu.
+      allow read: if true;                    // Publik baca (status buka/tutup PPDB, tema, dll)
+      allow write: if request.auth != null;   // Hanya Admin ubah target/saklar
+    }
+
+    // ==========================================
+    // 5. SITE SETTINGS (Donation Stats Reguler, Theme)
+    // ==========================================
+    match /site_settings/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ==========================================
+    // 6. DONATIONS (Wakaf Pembangunan Kelas)
+    // Sebelumnya TIDAK ADA rule untuk koleksi ini sama sekali -- defaultnya
+    // deny, kemungkinan bikin form konfirmasi donasi publik gagal submit.
+    // ==========================================
+    match /donations/{id} {
+      allow create: if request.resource.data.keys().hasAll(['name', 'amount'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.amount is int
+                    && request.resource.data.amount > 0
+                    && request.resource.data.isVerified == false; // tidak bisa langsung set true
+      allow read, update, delete: if request.auth != null; // hanya admin
+    }
+  }
+}

@@ -104,7 +104,7 @@ export default function Home() {
   const galleryData = [
     { image: '/images/TS1.jpg', title: 'Kelas Takhassus' },
     { image: '/images/Sholat.jpg', title: 'Sholat Berjamaah' },
-    { image: '/images/TB1.png', title: 'Praktek Memasak' },
+    { image: '/images/TB1.jpg', title: 'Praktek Memasak' },
     { image: '/images/oc1.jpg', title: 'Outing Class' },
     { image: '/images/Drumband DIY.jpg', title: 'Drumband' },
     { image: '/images/LS2.jpg', title: 'Berkebun' },
@@ -131,7 +131,7 @@ export default function Home() {
             </motion.p>
             <div className="hero-stats">
               <div className="stat"><AnimatedCounter value={352} /><span className="label">Siswa Aktif</span></div>
-              <div className="stat"><AnimatedCounter value={23} /><span className="label">Guru Profesional</span></div>
+              <div className="stat"><AnimatedCounter value={24} /><span className="label">Guru & Karyawan</span></div>
               <div className="stat"><AnimatedCounter value={13} /><span className="label">Ruang Kelas</span></div>
               <div className="stat"><AnimatedCounter value={1963} /><span className="label">Tahun Berdiri</span></div>
             </div>

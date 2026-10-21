@@ -17,11 +17,41 @@ export default function RamadanTheme() {
   }, []);
 
   useEffect(() => {
-    fetch('https://api.aladhan.com/v1/timingsByCity?city=Wonosari&country=Indonesia&method=20')
-      .then(res => res.json()).then(data => {
-        const t = data.data.timings;
-        setJadwal({ Imsak: t.Imsak, Maghrib: t.Maghrib, Tanggal: data.data.date.readable });
-      });
+    let isMounted = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 detik timeout
+
+    fetch('https://api.aladhan.com/v1/timingsByCity?city=Wonosari&country=Indonesia&method=20', {
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Gagal mengambil jadwal imsakiyah');
+        return res.json();
+      })
+      .then((data) => {
+        if (!isMounted) return;
+        const t = data?.data?.timings;
+        const dateStr = data?.data?.date?.readable;
+        if (t?.Imsak && t?.Maghrib) {
+          setJadwal({ Imsak: t.Imsak, Maghrib: t.Maghrib, Tanggal: dateStr || '-' });
+        } else {
+          throw new Error('Format data jadwal tidak sesuai');
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.error('Gagal memuat jadwal imsakiyah:', err);
+        // Fallback: tetap tampilkan jam default yang sudah ada di initial state,
+        // tapi ganti label "Memuat..." supaya tidak menggantung selamanya.
+        setJadwal((prev) => ({ ...prev, Tanggal: 'Jadwal perkiraan (gagal memuat data terbaru)' }));
+      })
+      .finally(() => clearTimeout(timeoutId));
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
@@ -68,12 +98,16 @@ export default function RamadanTheme() {
 
           <div style={infoCard}>
             <h3 style={{ color: '#1a5d1a', marginBottom: '20px' }}>📰 Berita Terbaru</h3>
-            {newsData.slice(0, 2).map(n => (
-              <div key={n.id} style={{ marginBottom: '15px', textAlign: 'left', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                <b style={{ fontSize: '0.9rem' }}>{n.title}</b>
-                <p style={{ fontSize: '0.8rem', color: '#666', margin: '5px 0' }}>{n.excerpt?.substring(0, 60)}...</p>
-              </div>
-            ))}
+            {newsData.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Belum ada berita terbaru.</p>
+            ) : (
+              newsData.slice(0, 2).map(n => (
+                <div key={n.id} style={{ marginBottom: '15px', textAlign: 'left', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                  <b style={{ fontSize: '0.9rem' }}>{n.title}</b>
+                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '5px 0' }}>{n.excerpt?.substring(0, 60)}...</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -43,15 +43,15 @@ export default function Navbar() {
   return (
     <header className="site-header">
       {/* Top Bar - Tetap sama */}
-      <div className="header-top">
-        <div className="container">
+      {/*<div className="header-top">
+        { <div className="container">
           <div className="header-info">
             <span><i className="fas fa-phone"></i> 0852-2644-3646</span>
             <span><i className="fas fa-envelope"></i> sdmuri63@gmail.com</span>
             <span><i className="fas fa-map-marker-alt"></i> Wonosari, Gunungkidul</span>
           </div>
         </div>
-      </div>
+      </div>*/}
 
       <div className="header-main">
         <div className="container">

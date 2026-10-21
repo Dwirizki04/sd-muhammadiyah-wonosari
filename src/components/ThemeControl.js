@@ -6,6 +6,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import RamadanTheme from "@/themes/RamadanTheme";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import FloatingDonasi from "@/components/FloatingDonasi";
+import ChatbotWidget from "@/components/ChatbotWidget";
 
 export default function ThemeControl({ children }) {
   const [isRamadhan, setIsRamadhan] = useState(false);
@@ -31,6 +32,7 @@ export default function ThemeControl({ children }) {
     <LayoutWrapper>
       {content}
       <FloatingDonasi />
+      <ChatbotWidget />
     </LayoutWrapper>
   );
 }

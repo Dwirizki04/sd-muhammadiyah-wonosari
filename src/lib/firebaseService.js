@@ -20,6 +20,48 @@ export const updatePPDBStatus = async (newStatus) => {
   return await setDoc(docRef, { isOpen: newStatus, updatedAt: serverTimestamp() }, { merge: true });
 };
 
+// --- Kuota Pendaftaran PPDB (mencegah pendaftaran membludak) ---
+// Dipakai bareng subscribePPDBStatus (jangan hapus itu, form pendaftaran
+// publik masih pakai fungsi itu apa adanya untuk cek buka/tutup).
+export const subscribePPDBConfig = (callback) => {
+  const docRef = doc(db, "settings", "ppdb_config");
+  return onSnapshot(docRef, (snap) => {
+    const data = snap.exists() ? snap.data() : {};
+    callback({
+      isOpen: data.isOpen === true,
+      kuota: Number(data.kuota) || 0, // 0 = tanpa batas
+      totalPendaftar: Number(data.totalPendaftar) || 0,
+    });
+  }, (err) => {
+    console.error("Permission Error PPDB Config:", err);
+    callback({ isOpen: false, kuota: 0, totalPendaftar: 0 });
+  });
+};
+
+export const updatePPDBKuota = async (newKuota) => {
+  const docRef = doc(db, "settings", "ppdb_config");
+  return await setDoc(docRef, { kuota: Number(newKuota) || 0, updatedAt: serverTimestamp() }, { merge: true });
+};
+
+// Reset counter totalPendaftar -- dipakai kalau admin mau buka gelombang
+// pendaftaran baru (misal tahun ajaran berikutnya) tanpa menghapus data lama.
+export const resetPPDBCounter = async () => {
+  const docRef = doc(db, "settings", "ppdb_config");
+  return await setDoc(docRef, { totalPendaftar: 0, updatedAt: serverTimestamp() }, { merge: true });
+};
+
+// Hitung ulang totalPendaftar dari jumlah dokumen ppdb_registrations yang
+// SUNGGUHAN ada di database, lalu perbaiki angkanya di settings/ppdb_config.
+// Dipakai untuk memperbaiki counter yang kebetulan meleset (misal dari bug
+// versi lama yang belum mengurangi counter saat hapus data).
+export const syncPPDBCounter = async () => {
+  const snap = await getDocs(collection(db, "ppdb_registrations"));
+  const realCount = snap.size;
+  const docRef = doc(db, "settings", "ppdb_config");
+  await setDoc(docRef, { totalPendaftar: realCount, updatedAt: serverTimestamp() }, { merge: true });
+  return realCount;
+};
+
 // PPDB Data List
 export const subscribePPDB = (callback) => {
   const q = query(collection(db, "ppdb_registrations"), orderBy("createdAt", "desc"));
@@ -33,7 +75,15 @@ export const updateStatusPPDB = async (id, newStatus) => {
 };
 
 export const deletePPDBEntry = async (id) => {
-  return await deleteDoc(doc(db, "ppdb_registrations", id));
+  // PENTING: hapus dokumen pendaftar SEKALIGUS turunkan counter
+  // totalPendaftar di settings/ppdb_config -- kalau tidak, counter kuota
+  // akan terus "menganggap" pendaftar yang sudah dihapus masih ada,
+  // sehingga kuota tersisa jadi tidak akurat (lebih kecil dari yang
+  // seharusnya) dan pendaftaran bisa ditolak padahal kuota sebenarnya
+  // masih longgar.
+  const configRef = doc(db, "settings", "ppdb_config");
+  await deleteDoc(doc(db, "ppdb_registrations", id));
+  return await updateDoc(configRef, { totalPendaftar: increment(-1) });
 };
 
 
@@ -106,12 +156,8 @@ export const updateThemeSettings = async (themeData) => {
  * PENTING: Fungsi-fungsi di bawah ini SENGAJA tidak lagi query Firestore
  * langsung dari client (`where("nik", "==", nik)`), karena itu membuat NIK
  * bisa ditebak-tebak (enumerasi) langsung lewat Firebase client SDK dari
- * DevTools browser, tanpa melalui form/UI sama sekali.
- *
- * Sekarang keduanya memanggil API Route server-side yang menerapkan
- * rate-limiting per-IP. Pastikan endpoint berikut sudah dibuat:
- *   - /api/cek-status      (detail lengkap, dipakai halaman cek status hasil PPDB)
- *   - /api/check-nik       (hanya return boolean sudah terdaftar/belum, dipakai form pendaftaran)
+ * DevTools browser, tanpa melalui form/UI sama sekali. Sekarang lewat API
+ * Route server-side yang menerapkan rate-limiting per-IP.
  */
 
 export const checkPPDBStatus = async (nik) => {
@@ -142,7 +188,7 @@ export const isNikAlreadyRegistered = async (nik) => {
   return data.exists;
 };
 
-// Alias, dipertahankan agar kode lama yang memanggil checkNikExists tidak rusak
+// Alias, dipertahankan supaya kode lama yang memanggil checkNikExists tidak rusak
 export const checkNikExists = isNikAlreadyRegistered;
 
 // ==========================================
@@ -178,23 +224,6 @@ export const subscribeDonasiTakjilStatus = (callback) => {
 
 export const submitDonasiTakjil = async (data) => {
   try {
-    // --- VALIDASI INPUT (mencegah manipulasi via console browser) ---
-    const qtyNasi = Number(data.qtyNasi) || 0;
-    const qtyMinum = Number(data.qtyMinum) || 0;
-    const MAX_PORSI_PER_SUBMIT = 200; // batas wajar per pengajuan, sesuaikan jika perlu
-
-    const isValidQty = (n) => Number.isInteger(n) && n >= 0 && n <= MAX_PORSI_PER_SUBMIT;
-
-    if (!isValidQty(qtyNasi) || !isValidQty(qtyMinum)) {
-      return { success: false, error: 'Jumlah porsi tidak valid.' };
-    }
-    if (!data.studentName || typeof data.studentName !== 'string' || !data.studentName.trim()) {
-      return { success: false, error: 'Nama murid wajib diisi.' };
-    }
-    if (!data.studentClass || typeof data.studentClass !== 'string') {
-      return { success: false, error: 'Kelas wajib diisi.' };
-    }
-
     const statsRef = doc(db, 'settings', 'donasi_takjil_stats');
     
     // Gunakan setDoc dengan merge: true agar dokumen tercipta jika belum ada tanpa menghapus data
@@ -202,6 +231,8 @@ export const submitDonasiTakjil = async (data) => {
     
     const statsSnap = await getDoc(statsRef);
     const stats = statsSnap.data();
+    const qtyNasi = Number(data.qtyNasi) || 0;
+    const qtyMinum = Number(data.qtyMinum) || 0;
     
     const currentCollectedNasi = Number(stats.collectedNasi) || 0;
     const currentCollectedMinuman = Number(stats.collectedMinuman) || 0;

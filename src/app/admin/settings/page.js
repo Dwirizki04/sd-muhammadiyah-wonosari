@@ -1,34 +1,38 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { subscribeThemeMode, updateRamadhanMode } from '@/lib/settingsService';
+import { subscribeThemeMode, updateActiveTheme, AVAILABLE_THEMES } from '@/lib/settingsService';
 
 export default function AdminSettings() {
-  const [isRamadhan, setIsRamadhan] = useState(false);
+  const [activeTheme, setActiveTheme] = useState('default');
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
-  // LOGIKA: Ambil status dari Service
   useEffect(() => {
-    const unsub = subscribeThemeMode((status) => {
-      setIsRamadhan(status);
+    const unsub = subscribeThemeMode((themeId) => {
+      setActiveTheme(themeId);
       setLoading(false);
     });
     return () => unsub();
   }, []);
 
-  // AKSI: Jalankan toggle melalui Service
-  const handleToggle = async () => {
+  const handleSelectTheme = async (themeId) => {
+    if (themeId === activeTheme || updating) return;
+    setUpdating(true);
     try {
-      await updateRamadhanMode(isRamadhan);
+      await updateActiveTheme(themeId);
+      const label = AVAILABLE_THEMES.find((t) => t.id === themeId)?.label || themeId;
       Swal.fire({
         title: 'Berhasil!',
-        text: `Tampilan web utama sekarang Mode ${!isRamadhan ? 'Ramadhan' : 'Normal'}`,
+        text: `Tampilan web utama sekarang: ${label}`,
         icon: 'success',
         timer: 1500,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
     } catch (e) {
       Swal.fire('Error', 'Gagal mengubah tema', 'error');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -36,56 +40,73 @@ export default function AdminSettings() {
 
   return (
     <div style={containerStyle}>
-      <h2 style={{ marginBottom: '30px', color: '#1a5d1a' }}>Pengaturan Tampilan</h2>
-      
-      <div style={cardStyle}>
-        <div>
-          <h3 style={{ margin: 0 }}>Mode Ramadhan Musiman</h3>
-          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-            Aktifkan untuk merubah wajah depan web menjadi nuansa Islami.
-          </p>
-        </div>
-        
-        {/* SAKLAR MODERN */}
-        <div onClick={handleToggle} style={switchContainer(isRamadhan)}>
-          <div style={switchCircle(isRamadhan)}></div>
-        </div>
+      <h2 style={{ marginBottom: '10px', color: '#1a5d1a' }}>Pengaturan Tampilan</h2>
+      <p style={{ color: '#64748b', marginBottom: '30px' }}>
+        Pilih tema yang tampil di halaman utama website untuk semua pengunjung.
+      </p>
+
+      <div style={themeGrid}>
+        {AVAILABLE_THEMES.map((theme) => {
+          const isActive = activeTheme === theme.id;
+          return (
+            <div
+              key={theme.id}
+              onClick={() => handleSelectTheme(theme.id)}
+              style={themeCard(isActive, updating)}
+            >
+              <div style={themeCardHeader}>
+                <span style={themeCardTitle}>{theme.label}</span>
+                {isActive && <span style={activeBadge}>✓ Aktif</span>}
+              </div>
+              <div style={radioCircle(isActive)}>
+                {isActive && <div style={radioDot} />}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// --- STYLES (Menggunakan CSS-in-JS favoritmu) ---
+// --- STYLES ---
 const containerStyle = { padding: '60px 40px' };
 const loadingStyle = { padding: '50px', marginLeft: '20px', fontWeight: 'bold', color: '#1a5d1a' };
-const cardStyle = {
+
+const themeGrid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: '16px',
+  maxWidth: '800px',
+};
+
+const themeCard = (active, disabled) => ({
   background: 'white',
-  padding: '30px',
-  borderRadius: '20px',
-  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+  padding: '22px',
+  borderRadius: '18px',
+  border: active ? '2px solid #1a5d1a' : '2px solid #e2e8f0',
+  boxShadow: active ? '0 6px 20px rgba(26,93,26,0.12)' : '0 2px 8px rgba(0,0,0,0.03)',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  maxWidth: '800px'
-};
-
-const switchContainer = (active) => ({
-  width: '60px',
-  height: '30px',
-  backgroundColor: active ? '#1a5d1a' : '#cbd5e1',
-  borderRadius: '30px',
-  padding: '3px',
-  cursor: 'pointer',
-  transition: '0.3s',
-  display: 'flex',
-  alignItems: 'center'
+  cursor: disabled ? 'wait' : 'pointer',
+  transition: '0.2s',
+  opacity: disabled ? 0.7 : 1,
 });
 
-const switchCircle = (active) => ({
+const themeCardHeader = { display: 'flex', flexDirection: 'column', gap: '6px' };
+const themeCardTitle = { fontWeight: 700, color: '#1e293b', fontSize: '1rem' };
+const activeBadge = { fontSize: '0.75rem', color: '#1a5d1a', fontWeight: 700 };
+
+const radioCircle = (active) => ({
   width: '24px',
   height: '24px',
-  backgroundColor: 'white',
   borderRadius: '50%',
-  transition: '0.3s',
-  transform: active ? 'translateX(30px)' : 'translateX(0)'
+  border: active ? '2px solid #1a5d1a' : '2px solid #cbd5e1',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
 });
+
+const radioDot = { width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#1a5d1a' };

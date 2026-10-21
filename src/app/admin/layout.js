@@ -7,7 +7,7 @@ import AdminSidebar from '@/components/AdminSidebar';
 
 export default function AdminLayout({ children }) {
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setSidebarOpen] = useState(false); // State untuk Toggle
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -28,9 +28,23 @@ export default function AdminLayout({ children }) {
     return () => unsubscribe();
   }, [pathname, router]);
 
-  // Tutup sidebar otomatis saat berpindah halaman (di HP)
+  // Ingat preferensi buka/tutup sidebar antar sesi (misal admin lebih suka
+  // kerja dengan sidebar tertutup terus di layar sempit/dual-monitor)
   useEffect(() => {
-    setSidebarOpen(false);
+    const saved = localStorage.getItem('adminSidebarOpen');
+    if (saved !== null) setSidebarOpen(saved === 'true');
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('adminSidebarOpen', String(isSidebarOpen));
+  }, [isSidebarOpen]);
+
+  // Di HP, otomatis tutup sidebar tiap pindah halaman (supaya tidak
+  // menutupi konten). Di layar lebih lebar, preferensi admin dibiarkan.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
   }, [pathname]);
 
   if (loading) {
@@ -50,22 +64,26 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="admin-layout-wrapper">
-      {/* Tombol Toggle Mobile */}
-      <div className="mobile-header">
-        <button className="menu-toggle-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-          <i className={isSidebarOpen ? "fas fa-times" : "fas fa-bars"}></i>
-        </button>
-        <span className="mobile-logo-text">Admin SDM</span>
-      </div>
-
-      {/* Overlay untuk menutup menu saat klik di luar (hanya di HP) */}
+      {/* Overlay cuma dipakai di HP, supaya klik di luar sidebar menutup */}
       {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>}
 
-      <aside className={`admin-sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
+      <aside className={`admin-sidebar-container ${isSidebarOpen ? 'open' : 'closed'}`}>
         <AdminSidebar />
       </aside>
 
-      <main className="admin-main-content">
+      {/* Tombol toggle tunggal, selalu ada di semua ukuran layar --
+          nempel di tepi sidebar, ikut geser sesuai status buka/tutup */}
+      <button
+        className="sidebar-toggle-btn"
+        onClick={() => setSidebarOpen(!isSidebarOpen)}
+        style={{ left: isSidebarOpen ? '260px' : '0px' }}
+        aria-label={isSidebarOpen ? 'Sembunyikan menu' : 'Tampilkan menu'}
+        title={isSidebarOpen ? 'Sembunyikan menu' : 'Tampilkan menu'}
+      >
+        <i className={`fas fa-chevron-${isSidebarOpen ? 'left' : 'right'}`}></i>
+      </button>
+
+      <main className={`admin-main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         {children}
       </main>
 
@@ -74,9 +92,9 @@ export default function AdminLayout({ children }) {
           display: flex;
           min-height: 100vh;
           background-color: #f1f5f9;
+          position: relative;
         }
 
-        /* Sidebar Desktop */
         .admin-sidebar-container {
           width: 260px;
           position: fixed;
@@ -85,74 +103,65 @@ export default function AdminLayout({ children }) {
           bottom: 0;
           background: white;
           z-index: 1000;
-          transition: transform 0.3s ease;
+          transition: transform 0.25s ease;
+          box-shadow: 2px 0 16px rgba(0,0,0,0.05);
+        }
+
+        .admin-sidebar-container.closed {
+          transform: translateX(-100%);
+        }
+
+        .sidebar-toggle-btn {
+          position: fixed;
+          top: 24px;
+          z-index: 1001;
+          background: #1a5d1a;
+          color: white;
+          border: none;
+          width: 30px;
+          height: 44px;
+          border-radius: 0 10px 10px 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.85rem;
+          transition: left 0.25s ease, background 0.2s ease;
+          box-shadow: 2px 2px 10px rgba(0,0,0,0.12);
+        }
+        .sidebar-toggle-btn:hover {
+          background: #14532d;
         }
 
         .admin-main-content {
           flex-grow: 1;
+          width: 100%;
+          padding: 24px;
+          transition: margin-left 0.25s ease;
+        }
+        .admin-main-content.shifted {
           margin-left: 260px;
-          width: calc(100% - 260px);
-          padding: 20px;
-          transition: all 0.3s ease;
         }
 
-        .mobile-header {
+        .sidebar-overlay {
           display: none;
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 60px;
-          background: white;
-          border-bottom: 1px solid #e2e8f0;
-          align-items: center;
-          padding: 0 20px;
-          z-index: 1100;
         }
 
-        .menu-toggle-btn {
-          background: #1a5d1a;
-          color: white;
-          border: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 1.2rem;
-          margin-right: 15px;
-        }
-
-        .mobile-logo-text {
-          font-weight: 800;
-          color: #1a5d1a;
-        }
-
-        /* Responsive Mobile */
+        /* Layar HP: sidebar jadi overlay penuh (tidak mendorong konten),
+           tombol toggle selalu nempel di pojok kiri layar */
         @media (max-width: 768px) {
-          .mobile-header { display: flex; }
-          
-          .admin-sidebar-container {
-            transform: translateX(-100%); /* Sembunyi di kiri */
-          }
-
-          .admin-sidebar-container.open {
-            transform: translateX(0); /* Muncul saat di-toggle */
-          }
-
-          .admin-main-content {
+          .admin-main-content.shifted {
             margin-left: 0;
-            width: 100%;
-            padding-top: 80px; /* Jarak agar tidak tertutup header mobile */
           }
-
           .sidebar-overlay {
+            display: block;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 999;
+          }
+          .sidebar-toggle-btn {
+            left: 0 !important;
           }
         }
       `}</style>
