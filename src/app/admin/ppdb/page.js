@@ -138,10 +138,10 @@ export default function AdminPPDB() {
   // --- EKSPOR EXCEL RAPI ---
   const exportToExcel = () => {
     const separator = ";";
-    const headers = ["Nama", "NIK", "NISN", "JK", "TTL", "Umur", "Alamat", "Desa", "Kecamatan", "WA Ayah", "WA Ibu", "Status"].join(separator);
+    const headers = ["Nama", "NIK", "NISN", "JK", "TTL", "Umur", "Alamat", "Desa", "Kecamatan", "Kabupaten/Kota", "Kode Pos", "WA Ayah", "WA Ibu", "Status", "Asal TK", "Alamat TK"].join(separator);
     const rows = urutkanPendaftar(ppdbData, sortOrder).map(d => [
       `"${d.namaLengkap}"`, `"'${d.nik}"`, `"'${d.nisn}"`, `"${d.jenisKelamin}"`, `"${d.tempatLahir}, ${d.tanggalLahir}"`, `"${hitungUmur(d.tanggalLahir)}"`,
-      `"${d.alamatJalan}"`, `"${d.desaKelurahan}"`, `"${d.kecamatan}"`, `"'${d.noWaAyah}"`, `"'${d.noWaIbu}"`, `"${d.status}"`
+      `"${d.alamatJalan}"`, `"${d.desaKelurahan}"`, `"${d.kecamatan}"`, `"${d.kabupatenKota}"`, `"${d.kodePos}"`, `"'${d.noWaAyah}"`, `"'${d.noWaIbu}"`, `"${d.status}"`, `"${d.asalTk}"`, `"${d.alamatTk}"`
     ].join(separator)).join("\n");
     const csvContent = "\ufeff" + headers + "\n" + rows;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -154,6 +154,41 @@ export default function AdminPPDB() {
 
   return (
     <div style={s.page}>
+      <style jsx global>{`
+        .adm-actions > * { min-width: 0; text-align: center; }
+        .adm-actions button { min-height: 44px; }
+        @media (max-width: 900px) {
+          .adm-actions { width: 100%; }
+          .adm-actions > * { flex: 1 1 calc(50% - 12px); justify-content: center; }
+        }
+        @media (max-width: 480px) {
+          .adm-actions > * { flex: 1 1 100%; }
+        }
+        @media (max-width: 640px) {
+          .adm-filters > input { flex: 1 1 100% !important; min-height: 44px; font-size: 16px !important; }
+          .adm-filters > select { flex: 1 1 calc(50% - 6px); min-height: 44px; font-size: 16px; }
+        }
+        /* HP & tablet kecil: tabel berubah jadi kartu per pendaftar (tanpa geser samping) */
+        @media (max-width: 768px) {
+          .adm-table { min-width: 0 !important; }
+          .adm-table thead { display: none; }
+          .adm-table, .adm-table tbody, .adm-table tr, .adm-table td { display: block; width: 100%; box-sizing: border-box; }
+          .adm-table tr { border: 1px solid #eef2f6 !important; border-radius: 16px; padding: 6px 14px; margin-bottom: 14px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+          .adm-table td { padding: 10px 0 !important; border-bottom: 1px dashed #f1f5f9; text-align: left !important; }
+          .adm-table td::before { content: attr(data-label); display: block; color: #94a3b8; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 4px; }
+          .adm-table td a { font-size: 0.9rem !important; padding: 4px 0; display: inline-block; }
+          .adm-table select { font-size: 16px !important; min-height: 42px; }
+          .adm-table .adm-td-action { display: flex !important; justify-content: stretch !important; gap: 10px !important; border-bottom: none; }
+          .adm-table .adm-td-action::before { display: none; }
+          .adm-table .adm-td-action button { flex: 1; min-height: 44px; }
+        }
+        @media (max-width: 640px) {
+          .adm-modal { padding: 16px !important; border-radius: 20px !important; max-height: 92vh !important; }
+        }
+        @supports (height: 100dvh) {
+          .adm-modal { max-height: 90dvh !important; }
+        }
+      `}</style>
       <div style={s.container}>
         
         {/* HEADER */}
@@ -161,12 +196,12 @@ export default function AdminPPDB() {
           <div style={s.brand}>
             <div style={s.logoImg}>M</div>
             <div>
-              <h1 style={s.title}>Panel Admin PPDB</h1>
+              <h1 style={s.title}>Panel Admin SPMB</h1>
               <p style={s.subtitle}>SD Muhammadiyah Wonosari • Manajemen Real-time</p>
             </div>
           </div>
           
-          <div style={s.headerActions}>
+          <div style={s.headerActions} className="adm-actions">
             <div style={s.statusControl(isOpen)}>
               <span>Pendaftaran {isOpen ? 'DIBUKA' : 'DITUTUP'}</span>
               <button onClick={() => updatePPDBStatus(!isOpen)} style={s.toggleBtn(isOpen)}>
@@ -193,7 +228,7 @@ export default function AdminPPDB() {
         {/* MAIN DATA */}
         <div style={s.contentCard}>
           <div style={s.tableHeader}>
-            <div style={s.searchGroup}>
+            <div style={s.searchGroup} className="adm-filters">
               <input 
                 placeholder="Cari Nama atau NIK..." 
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -213,7 +248,7 @@ export default function AdminPPDB() {
           </div>
 
           <div style={s.tableScroll}>
-            <table style={s.table}>
+            <table style={s.table} className="adm-table">
               <thead>
                 <tr style={s.thRow}>
                   <th style={s.th}>SISWA</th>
@@ -227,22 +262,22 @@ export default function AdminPPDB() {
                 <AnimatePresence mode="popLayout">
                   {sortedData.map((item) => (
                     <motion.tr key={item.id} layout initial={{opacity:0}} animate={{opacity:1}} style={s.tr}>
-                      <td style={s.td}>
+                      <td style={s.td} data-label="Siswa">
                         <div style={s.studentName}>{item.namaLengkap}</div>
                         <div style={s.studentSub}>{item.jenisKelamin} • {item.desaKelurahan}</div>
                         <div style={s.studentSub}>🎂 {hitungUmur(item.tanggalLahir)} • {item.tanggalLahir || '-'}</div>
                       </td>
-                      <td style={s.td}>
+                      <td style={s.td} data-label="Identitas">
                         <div style={s.nikBadge}>NIK: {item.nik}</div>
                         <div style={s.nisnText}>NISN: {item.nisn || '-'}</div>
                       </td>
-                      <td style={s.td}>
+                      <td style={s.td} data-label="Kontak Ortu">
                         <div style={s.waGroup}>
                           {item.noWaAyah && <a href={`https://wa.me/${item.noWaAyah}`} target="_blank" style={s.waAyah}>Ayah: {item.noWaAyah}</a>}
                           {item.noWaIbu && <a href={`https://wa.me/${item.noWaIbu}`} target="_blank" style={s.waIbu}>Ibu: {item.noWaIbu}</a>}
                         </div>
                       </td>
-                      <td style={s.td}>
+                      <td style={s.td} data-label="Status">
                         <select 
                           value={item.status} 
                           onChange={(e) => updateStatusPPDB(item.id, e.target.value)}
@@ -253,7 +288,7 @@ export default function AdminPPDB() {
                           <option value="ditolak">🔴 Ditolak</option>
                         </select>
                       </td>
-                      <td style={s.tdAction}>
+                      <td style={s.tdAction} className="adm-td-action">
                         <button onClick={() => setSelectedStudent(item)} style={s.btnDetail}>👁️ Detail</button>
                         <button onClick={() => handleDelete(item)} style={s.btnDel}>Hapus</button>
                       </td>
@@ -270,7 +305,7 @@ export default function AdminPPDB() {
       <AnimatePresence>
         {selectedStudent && (
           <div style={s.modalOverlay} onClick={() => setSelectedStudent(null)}>
-            <motion.div initial={{y: 50, opacity: 0}} animate={{y: 0, opacity: 1}} style={s.modal} onClick={e => e.stopPropagation()}>
+            <motion.div initial={{y: 50, opacity: 0}} animate={{y: 0, opacity: 1}} style={s.modal} className="adm-modal" onClick={e => e.stopPropagation()}>
               <header style={s.modalHeader}>
                 <div>
                   <h2 style={s.mTitle}>Detail Lengkap Calon Siswa</h2>
@@ -290,6 +325,8 @@ export default function AdminPPDB() {
                     <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahir}, ${selectedStudent.tanggalLahir}`} />
                     <DetailBox label="Jenis Kelamin" val={selectedStudent.jenisKelamin} />
                     <DetailBox label="Agama" val={selectedStudent.agama} />
+                    <DetailBox label="Asal TK" val={selectedStudent.asalTk} />
+                    <DetailBox label="Alamat TK" val={selectedStudent.alamatTk} />
                     <DetailBox label="Anak Ke" val={`${selectedStudent.anakKe} dari ${selectedStudent.jumlahSaudara} bersaudara`} />
                     <DetailBox label="Hobi / Cita-cita" val={`${selectedStudent.hobi} / ${selectedStudent.citaCita}`} />
                   </div>
@@ -303,6 +340,7 @@ export default function AdminPPDB() {
                     <DetailBox label="RT / RW" val={`${selectedStudent.rt} / ${selectedStudent.rw}`} />
                     <DetailBox label="Desa / Kelurahan" val={selectedStudent.desaKelurahan} />
                     <DetailBox label="Kecamatan" val={selectedStudent.kecamatan} />
+                    <DetailBox label="Kabupaten/Kota" val={selectedStudent.kabupatenKota} />
                     <DetailBox label="Kode Pos" val={selectedStudent.kodePos} />
                   </div>
                 </div>
@@ -316,7 +354,7 @@ export default function AdminPPDB() {
                        <DetailBox label="Nama Ayah" val={selectedStudent.namaAyah} />
                        <DetailBox label="NIK Ayah" val={selectedStudent.nikAyah} />
                        <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahirAyah || '-'}, ${selectedStudent.tanggalLahirAyah || '-'}`} />
-                       <DetailBox label="Pendidikan" val={selectedStudent.pendidikanAyah} />
+                       <DetailBox label="Pendidikan Terakhir" val={selectedStudent.pendidikanAyah} />
                        <DetailBox label="Pekerjaan" val={selectedStudent.pekerjaanAyah} />
                        <DetailBox label="Penghasilan" val={selectedStudent.penghasilanAyah} />
                        <DetailBox label="WhatsApp" val={selectedStudent.noWaAyah} />
@@ -326,7 +364,7 @@ export default function AdminPPDB() {
                        <DetailBox label="Nama Ibu" val={selectedStudent.namaIbu} />
                        <DetailBox label="NIK Ibu" val={selectedStudent.nikIbu} />
                        <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahirIbu || '-'}, ${selectedStudent.tanggalLahirIbu || '-'}`} />
-                       <DetailBox label="Pendidikan" val={selectedStudent.pendidikanIbu} />
+                       <DetailBox label="Pendidikan Terakhir" val={selectedStudent.pendidikanIbu} />
                        <DetailBox label="Pekerjaan" val={selectedStudent.pekerjaanIbu} />
                        <DetailBox label="Penghasilan" val={selectedStudent.penghasilanIbu} />
                        <DetailBox label="WhatsApp" val={selectedStudent.noWaIbu} />
@@ -343,7 +381,7 @@ export default function AdminPPDB() {
                       <DetailBox label="Hubungan" val={selectedStudent.hubunganWali} />
                       <DetailBox label="NIK Wali" val={selectedStudent.nikWali} />
                       <DetailBox label="Tempat, Tgl Lahir" val={`${selectedStudent.tempatLahirWali || '-'}, ${selectedStudent.tanggalLahirWali || '-'}`} />
-                      <DetailBox label="Pendidikan" val={selectedStudent.pendidikanWali} />
+                      <DetailBox label="Pendidikan Terakhir" val={selectedStudent.pendidikanWali} />
                       <DetailBox label="Pekerjaan" val={selectedStudent.pekerjaanWali} />
                       <DetailBox label="Penghasilan" val={selectedStudent.penghasilanWali} />
                     </div>
@@ -400,14 +438,14 @@ const DetailBox = ({label, val}) => (
 
 // --- STYLES ---
 const s = {
-  page: { background: '#f4f7fa', minHeight: '100vh', padding: '40px 20px', fontFamily: "'Plus Jakarta Sans', sans-serif" },
+  page: { background: '#f4f7fa', minHeight: '100vh', padding: 'clamp(8px, 2vw, 40px) clamp(0px, 1vw, 20px)', fontFamily: "'Plus Jakarta Sans', sans-serif" },
   container: { maxWidth: '1200px', margin: '0 auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', background: 'white', padding: '20px 30px', borderRadius: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.02)', flexWrap: 'wrap', gap: '20px' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'clamp(20px, 4vw, 40px)', background: 'white', padding: 'clamp(14px, 3vw, 20px) clamp(14px, 4vw, 30px)', borderRadius: 'clamp(16px, 3vw, 20px)', boxShadow: '0 4px 10px rgba(0,0,0,0.02)', flexWrap: 'wrap', gap: '20px' },
   brand: { display: 'flex', alignItems: 'center', gap: '15px' },
   logoImg: { background: '#1a5d1a', width: '45px', height: '45px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' },
-  title: { margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#1e293b' },
+  title: { margin: 0, fontSize: 'clamp(1.1rem, 4.5vw, 1.4rem)', fontWeight: '800', color: '#1e293b' },
   subtitle: { margin: 0, fontSize: '0.8rem', color: '#64748b' },
-  headerActions: { display: 'flex', alignItems: 'center', gap: '20px' },
+  headerActions: { display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' },
   statusControl: (open) => ({ display: 'flex', alignItems: 'center', gap: '12px', background: open ? '#f0fdf4' : '#fef2f2', padding: '8px 15px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.8rem', color: open ? '#166534' : '#991b1b' }),
   toggleBtn: (open) => ({ width: '40px', height: '22px', background: open ? '#22c55e' : '#cbd5e1', borderRadius: '50px', border: 'none', position: 'relative', cursor: 'pointer' }),
   toggleCircle: (open) => ({ width: '16px', height: '16px', background: 'white', borderRadius: '50%', position: 'absolute', top: '3px', left: open ? '21px' : '3px', transition: '0.3s' }),
@@ -416,16 +454,16 @@ const s = {
   btnSync: { background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '10px 18px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' },
   docLink: { display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '10px 16px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem', textDecoration: 'none' },
 
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: '20px', marginBottom: 'clamp(20px, 4vw, 40px)' },
   card: { background: 'white', padding: '25px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },
   cardIcon: { fontSize: '2rem' },
   cardLabel: { margin: 0, color: '#64748b', fontSize: '0.75rem', fontWeight: 'bold' },
   cardVal: { margin: 0, fontSize: '2rem', fontWeight: '900', color: '#1e293b' },
 
-  contentCard: { background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 20px rgba(0,0,0,0.02)', overflow: 'hidden' },
+  contentCard: { background: 'white', borderRadius: 'clamp(16px, 3vw, 24px)', padding: 'clamp(14px, 4vw, 30px)', boxShadow: '0 10px 20px rgba(0,0,0,0.02)', overflow: 'hidden' },
   tableHeader: { marginBottom: '30px' },
   searchGroup: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
-  searchInput: { flex: 1, minWidth: '200px', padding: '12px 18px', borderRadius: '12px', border: '1px solid #f1f5f9', outline: 'none' },
+  searchInput: { flex: 1, minWidth: 'min(200px, 100%)', padding: '12px 18px', borderRadius: '12px', border: '1px solid #f1f5f9', outline: 'none' },
   filterSelect: { padding: '10px 15px', borderRadius: '12px', border: '1px solid #f1f5f9', background: 'white' },
 
   tableScroll: { width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' },
@@ -451,8 +489,8 @@ const s = {
   btnDel: { background: 'none', border: 'none', color: '#ef4444', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer' },
 
   // MODAL STYLES
-  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100, padding: '20px' },
-  modal: { background: 'white', width: '100%', maxWidth: '900px', borderRadius: '30px', padding: '40px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px rgba(0,0,0,0.1)' },
+  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100, padding: 'clamp(8px, 3vw, 20px)' },
+  modal: { background: 'white', width: '100%', maxWidth: '900px', borderRadius: 'clamp(18px, 4vw, 30px)', padding: 'clamp(16px, 5vw, 40px)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px rgba(0,0,0,0.1)' },
   modalHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px', borderBottom: '1px solid #f1f5f9', paddingBottom: '15px', flexShrink: 0 },
   mTitle: { margin: 0, color: '#1e293b', fontSize: '1.4rem', fontWeight: '900' },
   mSub: { margin: 0, color: '#94a3b8', fontSize: '0.75rem' },
@@ -461,13 +499,13 @@ const s = {
   modalScrollArea: { overflowY: 'auto', flex: 1, paddingRight: '10px' },
   mSection: { marginBottom: '35px' },
   mSectionTitle: { fontSize: '0.8rem', color: '#1a5d1a', letterSpacing: '1.5px', fontWeight: '900', marginBottom: '20px', textTransform: 'uppercase', borderLeft: '4px solid #1a5d1a', paddingLeft: '10px' },
-  mGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' },
-  mGridSplit: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' },
+  mGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: '15px' },
+  mGridSplit: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 'clamp(16px, 3vw, 30px)' },
   mColumn: { display: 'flex', flexDirection: 'column', gap: '12px' },
   mColTitle: { fontSize: '0.9rem', fontWeight: '800', color: '#475569', marginBottom: '5px', background: '#f8fafc', padding: '5px 10px', borderRadius: '6px' },
   
   detailBox: { background: '#f8fafc', padding: '15px', borderRadius: '15px', border: '1px solid #f1f5f9' },
   detailLabel: { display: 'block', color: '#94a3b8', fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '5px' },
-  detailVal: { color: '#1e293b', fontWeight: '700', fontSize: '0.9rem' },
+  detailVal: { color: '#1e293b', fontWeight: '700', fontSize: '0.9rem', wordBreak: 'break-word' },
   btnModalClose: { width: '100%', padding: '15px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px', flexShrink: 0 }
 };

@@ -119,7 +119,7 @@ export default function CekStatus() {
             style={s.resultCard}
             className="print-area"
           >
-            <div style={s.cardHeader}>
+            <div style={s.cardHeader} className="cs-head">
                 <div style={s.headerLogoBox}>
                     <Image 
                         src="/images/logo sdm woonsa.jpg" 
@@ -145,6 +145,8 @@ export default function CekStatus() {
                     <InfoRow label="Jenis Kelamin" val={result.jenisKelamin} />
                     <InfoRow label="Tempat, Tgl Lahir" val={`${result.tempatLahir}, ${result.tanggalLahir}`} />
                     <InfoRow label="Alamat" val={result.alamatLengkap} />
+                    <InfoRow label="Asal TK" val={result.asalTk || '-'} />
+                    <InfoRow label="Alamat TK" val={result.alamatTk || '-'} />
                     <InfoRow label="Nama Ayah" val={result.namaAyah} />
                     <InfoRow label="Nama Ibu" val={result.namaIbu} />
                     <InfoRow label="Tanggal Daftar" val={result.dateStr} />
@@ -155,7 +157,7 @@ export default function CekStatus() {
                 </div>
             </div>
 
-            <div style={s.cardFooter} className="no-print">
+            <div style={s.cardFooter} className="no-print cs-footer">
                 <button onClick={() => window.print()} style={s.btnPrint}>🖨️ Cetak PDF</button>
                 <button onClick={() => setResult(null)} style={s.btnReset}>Cari NIK Lain</button>
             </div>
@@ -173,6 +175,15 @@ export default function CekStatus() {
           dirender di luar komponen ini -- style jsx biasa (scoped) tidak bisa
           menyentuh elemen di luar komponen saat ini. */}
       <style jsx global>{`
+        /* HP: label di atas nilai (bukan 2 kolom sempit), tombol memenuhi lebar */
+        @media (max-width: 520px) {
+          .cs-info-row { flex-direction: column !important; gap: 2px !important; }
+          .cs-info-label { flex: none !important; font-size: 0.72rem !important; text-transform: uppercase; letter-spacing: 0.5px; }
+          .cs-colon { display: none; }
+          .cs-footer { flex-direction: column !important; }
+          .cs-footer button { width: 100% !important; min-height: 46px; }
+          .cs-head { flex-direction: column !important; text-align: center; }
+        }
         @media print {
           /* Sembunyikan SEMUA elemen halaman secara default saat print... */
           body * {
@@ -206,38 +217,38 @@ export default function CekStatus() {
 }
 
 const InfoRow = ({label, val}) => (
-  <div style={s.infoRow}>
-    <span style={s.infoLabel}>{label}</span>
-    <span style={s.infoVal}>: {val}</span>
+  <div style={s.infoRow} className="cs-info-row">
+    <span style={s.infoLabel} className="cs-info-label">{label}</span>
+    <span style={s.infoVal}><span className="cs-colon">: </span>{val}</span>
   </div>
 );
 
 const s = {
-  pageBg: { minHeight: '100vh', background: '#f8fafc', padding: '120px 20px 50px' },
+  pageBg: { minHeight: '100vh', background: '#f8fafc', padding: 'clamp(96px, 16vw, 120px) clamp(12px, 4vw, 20px) 40px' },
   container: { maxWidth: '600px', margin: '0 auto' },
-  searchBox: { background: 'white', padding: '50px 40px', borderRadius: '30px', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', textAlign: 'center' },
+  searchBox: { background: 'white', padding: 'clamp(28px, 6vw, 50px) clamp(18px, 5vw, 40px)', borderRadius: 'clamp(20px, 4vw, 30px)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', textAlign: 'center' },
   logoWrapper: { marginBottom: '25px', display: 'flex', justifyContent: 'center' },
-  title: { fontSize: '1.8rem', fontWeight: '900', color: '#1e293b', marginBottom: '10px' },
+  title: { fontSize: 'clamp(1.35rem, 6vw, 1.8rem)', fontWeight: '900', color: '#1e293b', marginBottom: '10px' },
   subtitle: { color: '#64748b', marginBottom: '35px' },
   inputWrapper: { marginBottom: '20px' },
-  inputField: { width: '100%', padding: '18px 25px', borderRadius: '15px', border: '2px solid #e2e8f0', fontSize: '1.1rem', textAlign: 'center', fontWeight: '700', outline: 'none' },
-  btnPrimary: { width: '100%', background: '#1a5d1a', color: 'white', padding: '18px', borderRadius: '15px', border: 'none', fontWeight: '800', fontSize: '1rem', cursor: 'pointer' },
+  inputField: { width: '100%', padding: '18px 25px', borderRadius: '15px', border: '2px solid #e2e8f0', fontSize: '1.1rem', textAlign: 'center', fontWeight: '700', outline: 'none', boxSizing: 'border-box', minWidth: 0 },
+  btnPrimary: { width: '100%', boxSizing: 'border-box', minHeight: '54px', background: '#1a5d1a', color: 'white', padding: '18px', borderRadius: '15px', border: 'none', fontWeight: '800', fontSize: '1rem', cursor: 'pointer' },
   errorMsg: { color: '#ef4444', marginTop: '20px', background: '#fee2e2', padding: '12px', borderRadius: '10px', fontSize: '0.9rem' },
   linkBack: { color: '#64748b', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600' },
 
   resultCard: { background: 'white', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.1)' },
-  cardHeader: { background: '#1a5d1a', padding: '30px', color: 'white', display: 'flex', alignItems: 'center', gap: '20px' },
+  cardHeader: { background: '#1a5d1a', padding: 'clamp(18px, 4vw, 30px)', color: 'white', display: 'flex', alignItems: 'center', gap: 'clamp(12px, 3vw, 20px)' },
   headerLogoBox: { background: 'white', padding: '5px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { margin: 0, fontSize: '1.5rem', fontWeight: '800' },
+  headerTitle: { margin: 0, fontSize: 'clamp(1.15rem, 5vw, 1.5rem)', fontWeight: '800' },
   headerSub: { margin: 0, opacity: 0.8, fontSize: '0.85rem' },
-  cardBody: { padding: '40px' },
+  cardBody: { padding: 'clamp(18px, 5vw, 40px)' },
   badgeWrapper: { textAlign: 'center', marginBottom: '35px' },
   infoGrid: { display: 'flex', flexDirection: 'column', gap: '15px' },
-  infoRow: { display: 'flex', fontSize: '1.05rem' },
+  infoRow: { display: 'flex', fontSize: 'clamp(0.95rem, 3.6vw, 1.05rem)' },
   infoLabel: { flex: '0 0 150px', color: '#64748b', fontWeight: '600' },
-  infoVal: { color: '#1e293b', fontWeight: '800' },
+  infoVal: { color: '#1e293b', fontWeight: '800', wordBreak: 'break-word', minWidth: 0 },
   noteBox: { marginTop: '35px', padding: '20px', borderRadius: '15px', background: '#f8fafc', color: '#64748b', fontSize: '0.85rem', lineHeight: '1.6', borderLeft: '4px solid #e2e8f0' },
-  cardFooter: { background: '#f8fafc', padding: '25px', display: 'flex', gap: '12px', justifyContent: 'center' },
+  cardFooter: { background: '#f8fafc', padding: 'clamp(16px, 4vw, 25px)', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' },
   btnPrint: { background: '#1e293b', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '10px', fontWeight: '800', cursor: 'pointer' },
   btnReset: { background: 'white', color: '#64748b', border: '1px solid #cbd5e1', padding: '12px 25px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer' }
 };

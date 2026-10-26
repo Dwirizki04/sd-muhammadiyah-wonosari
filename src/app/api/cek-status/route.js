@@ -92,9 +92,11 @@ export async function POST(request) {
       jenisKelamin: data.jenisKelamin,
       tempatLahir: data.tempatLahir || '-',
       tanggalLahir: data.tanggalLahir || '-',
-      alamatLengkap: [data.alamatJalan, data.rt && data.rw ? `RT ${data.rt}/RW ${data.rw}` : null, data.desaKelurahan, data.kecamatan]
+      alamatLengkap: [data.alamatJalan, data.rt && data.rw ? `RT ${data.rt}/RW ${data.rw}` : null, data.desaKelurahan, data.kecamatan, data.kabupatenKota, data.kodePos]
         .filter(Boolean)
         .join(', ') || '-',
+      asalTk: data.asalTk || '-',
+      alamatTk: data.alamatTk || '-',
       namaAyah: data.namaAyah || '-',
       namaIbu: data.namaIbu || '-',
       status: data.status,

@@ -102,7 +102,7 @@ export async function POST(request) {
     // --- VALIDASI SERVER-SIDE (jangan cuma percaya validasi di browser) ---
     const requiredStrings = [
       'namaLengkap', 'jenisKelamin', 'agama', 'tempatLahir', 'tanggalLahir',
-      'alamatJalan', 'rt', 'rw', 'desaKelurahan', 'kecamatan',
+      'alamatJalan', 'alamatTk', 'asalTk','rt', 'rw', 'desaKelurahan', 'kecamatan',
       'namaAyah', 'tempatLahirAyah', 'tanggalLahirAyah',
       'namaIbu', 'tempatLahirIbu', 'tanggalLahirIbu',
       'noWaAyah', 'noWaIbu',
@@ -200,7 +200,7 @@ export async function POST(request) {
         agama: data.agama,
         anakKe: data.anakKe,
         jumlahSaudara: data.jumlahSaudara,
-        asalTK: data.asalTK || '-',
+        asalTk: data.asalTk || '-',
         alamatTk: data.alamatTk || '-',
 
         alamatJalan: data.alamatJalan,
