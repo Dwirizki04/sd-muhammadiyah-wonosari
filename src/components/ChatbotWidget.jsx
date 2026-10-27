@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const GREETING = 'Assalamu\'alaikum! 👋 Saya asisten virtual SD Muhammadiyah Wonosari. Ada yang bisa saya bantu seputar sekolah atau PPDB?';
+const GREETING = 'Assalamu\'alaikum! 👋 Saya asisten virtual SD Muhammadiyah Wonosari. Ada yang bisa saya bantu seputar sekolah atau SPMB?';
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -126,7 +126,7 @@ export default function ChatbotWidget() {
               </button>
             </form>
             <div style={privacyNotice}>
-              Jangan bagikan NIK atau data pribadi di sini. Untuk cek status PPDB, gunakan halaman{' '}
+              Jangan bagikan NIK atau data pribadi di sini. Untuk cek status SPMB, gunakan halaman{' '}
               <a href="/cek-status" style={privacyLink}>Cek Status</a>.
             </div>
           </motion.div>

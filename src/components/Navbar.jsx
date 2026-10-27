@@ -87,7 +87,7 @@ export default function Navbar() {
                   </li>
                 )}
                 
-                <li className={isActive('/ppdb')}><Link href="/ppdb" onClick={() => setIsOpen(false)}>Pendaftaran</Link></li>
+                <li className={isActive('/ppdb')}><Link href="/ppdb" onClick={() => setIsOpen(false)}>Indent SPMB</Link></li>
                 <li className={isActive('/contact')}><Link href="/contact" onClick={() => setIsOpen(false)}>Kontak</Link></li>
               </ul>
             </nav>
@@ -97,7 +97,6 @@ export default function Navbar() {
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle Menu"
             >
-              <span></span><span></span><span></span>
             </button>
           </div>
         </div>
