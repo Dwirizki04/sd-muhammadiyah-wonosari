@@ -33,6 +33,13 @@ const hitungUmur = (str) => {
   return `${tahun} th ${bulan} bln`;
 };
 
+const formatNomorWhatsApp = (nomor) => {
+  const digits = String(nomor || '').replace(/\D/g, '');
+  if (digits.startsWith('0')) return `62${digits.slice(1)}`;
+  if (digits.startsWith('8')) return `62${digits}`;
+  return digits;
+};
+
 // order: 'terbaru' | 'tertua' | 'termuda'
 // 'tertua'  = tanggal lahir paling awal di atas (umur terbesar -> terkecil)
 // 'termuda' = tanggal lahir paling akhir di atas (umur terkecil -> terbesar)
@@ -140,7 +147,7 @@ export default function AdminPPDB() {
     const separator = ";";
     const headers = ["Nama", "NIK", "NISN", "JK", "TTL", "Umur", "Alamat", "Desa", "Kecamatan", "Kabupaten/Kota", "Kode Pos", "WA Ayah", "WA Ibu", "Status", "Asal TK", "Alamat TK"].join(separator);
     const rows = urutkanPendaftar(ppdbData, sortOrder).map(d => [
-      `"${d.namaLengkap}"`, `"'${d.nik}"`, `"'${d.nisn}"`, `"${d.jenisKelamin}"`, `"${d.tempatLahir}, ${d.tanggalLahir}"`, `"${hitungUmur(d.tanggalLahir)}"`,
+      `"${d.namaLengkap}"`, `"'${d.nik}"`, `"'${d.nisn}"`, `"${d.jenisKelamin}"`, `"${d.tempatLahir}"`, `"${d.tanggalLahir}"`, `"${hitungUmur(d.tanggalLahir)}"`,
       `"${d.alamatJalan}"`, `"${d.desaKelurahan}"`, `"${d.kecamatan}"`, `"${d.kabupatenKota}"`, `"${d.kodePos}"`, `"'${d.noWaAyah}"`, `"'${d.noWaIbu}"`, `"${d.status}"`, `"${d.asalTk}"`, `"${d.alamatTk}"`
     ].join(separator)).join("\n");
     const csvContent = "\ufeff" + headers + "\n" + rows;
@@ -273,8 +280,8 @@ export default function AdminPPDB() {
                       </td>
                       <td style={s.td} data-label="Kontak Ortu">
                         <div style={s.waGroup}>
-                          {item.noWaAyah && <a href={`https://wa.me/${item.noWaAyah}`} target="_blank" style={s.waAyah}>Ayah: {item.noWaAyah}</a>}
-                          {item.noWaIbu && <a href={`https://wa.me/${item.noWaIbu}`} target="_blank" style={s.waIbu}>Ibu: {item.noWaIbu}</a>}
+                          {item.noWaAyah && <a href={`https://wa.me/${formatNomorWhatsApp(item.noWaAyah)}`} target="_blank" rel="noopener noreferrer" style={s.waAyah}>Ayah: {item.noWaAyah}</a>}
+                          {item.noWaIbu && <a href={`https://wa.me/${formatNomorWhatsApp(item.noWaIbu)}`} target="_blank" rel="noopener noreferrer" style={s.waIbu}>Ibu: {item.noWaIbu}</a>}
                         </div>
                       </td>
                       <td style={s.td} data-label="Status">
