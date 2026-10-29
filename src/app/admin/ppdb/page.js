@@ -145,7 +145,7 @@ export default function AdminPPDB() {
   // --- EKSPOR EXCEL RAPI ---
   const exportToExcel = () => {
     const separator = ";";
-    const headers = ["Nama", "NIK", "NISN", "JK", "TTL", "Umur", "Alamat", "Desa", "Kecamatan", "Kabupaten/Kota", "Kode Pos", "WA Ayah", "WA Ibu", "Status", "Asal TK", "Alamat TK"].join(separator);
+    const headers = ["Nama", "NIK", "NISN", "JK", "Tempat lahir", "Tanggal lahir", "Umur", "Alamat", "Desa", "Kecamatan", "Kabupaten/Kota", "Kode Pos", "WA Ayah", "WA Ibu", "Status", "Asal TK", "Alamat TK"].join(separator);
     const rows = urutkanPendaftar(ppdbData, sortOrder).map(d => [
       `"${d.namaLengkap}"`, `"'${d.nik}"`, `"'${d.nisn}"`, `"${d.jenisKelamin}"`, `"${d.tempatLahir}"`, `"${d.tanggalLahir}"`, `"${hitungUmur(d.tanggalLahir)}"`,
       `"${d.alamatJalan}"`, `"${d.desaKelurahan}"`, `"${d.kecamatan}"`, `"${d.kabupatenKota}"`, `"${d.kodePos}"`, `"'${d.noWaAyah}"`, `"'${d.noWaIbu}"`, `"${d.status}"`, `"${d.asalTk}"`, `"${d.alamatTk}"`
